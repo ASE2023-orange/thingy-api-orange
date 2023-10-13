@@ -8,6 +8,7 @@ from thingy_api import init_app
 load_dotenv()  # take environment variables from .env.
 
 loop = get_event_loop()
+# init_app() is the entry point of the api
 loop.run_until_complete(init_app(loop))
 
 try:

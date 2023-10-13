@@ -6,6 +6,7 @@ import aiohttp_cors
 from aiohttp import web
 from aiohttp.web import Response
 
+# Retrieve environment variables
 IP = getenv('TODO_IP', 'localhost')
 PORT = getenv('TODO_PORT', '8080')
 
@@ -30,6 +31,7 @@ async def init_app(loop):
     # TODO: add all routes here
     cors.add(app.router.add_get('/live/', None, name='all_todos'))
     cors.add(app.router.add_get('/live/{plant_id}', None, name='create_todo'))
+
 
     logger.info("Starting server at %s:%s", IP, PORT)
     srv = await loop.create_server(app.make_handler(), IP, PORT)

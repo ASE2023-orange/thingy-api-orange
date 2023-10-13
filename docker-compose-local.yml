@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: thingy_db
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - keycloak-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.4
+    command: "start-dev"
+    environment:
+      KEYCLOAK_ADMIN: root
+      KEYCLOAK_ADMIN_PASSWORD: password
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+      KC_DB_URL: jdbc:postgresql://postgres/thingy_db # This links to the "postgres" service above
+      #DB_URL_PORT: 5432
+      KC_DB: postgres
+      KC_DB_USERNAME: root
+      KC_DB_PASSWORD: password
+      KC_DB_SCHEMA: keycloak
+    ports:
+      - "8888:8080"
+    depends_on:
+      - postgres
+    networks:
+      - keycloak-network
+
+networks:
+  keycloak-network:
+    driver: bridge
+
+volumes:
+  pg-data:

@@ -15,3 +15,17 @@ python3 run.py
 ```
 - To stop the local server, use ctrl+c
 - Finally, read carefully next section to know more about database. Normally, it should be plug and play and no more action is required (unless configurations in .env have been modified)
+
+## Keycloak local setup
+- Have a look at the docker-compose-local.yml file and adapt if needed. Defalut should work in local environments.
+- Create containers with docker-compose:
+```
+docker compose -f docker-compose-local.yml up -d
+```
+- Open the keycloak admin dashboard, e.g., http://localhost:8888
+- Login with default admin credentials (have a look at docker-compose file to find them).
+- Create a new realm called "thingy-orange"
+- Create a test user. Once created, create a credential (password) for the new user
+- Create two clients:
+  - Frontend: add a client ID and make sure that "Client authentication" is enabled.
+  - Backend: Same as frontend, but "OAuth 2.0 Device Authorization Grant" must be thicked.
