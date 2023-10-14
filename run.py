@@ -1,11 +1,8 @@
 from asyncio import get_event_loop
 
 from aiohttp import web
-from dotenv import load_dotenv
 
 from thingy_api import init_app
-
-load_dotenv()  # take environment variables from .env.
 
 loop = get_event_loop()
 # init_app() is the entry point of the api
