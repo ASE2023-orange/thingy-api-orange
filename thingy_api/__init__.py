@@ -7,8 +7,8 @@ from aiohttp import web
 from aiohttp.web import Response
 from dotenv import load_dotenv
 
+from thingy_api.influx import get_test_points, write_test_point
 from thingy_api.middleware import keycloak_middleware
-
 
 # take environment variables from api.env
 load_dotenv(dotenv_path='api.env')
@@ -38,7 +38,8 @@ async def init_app(loop):
 
     # TODO: add all routes here
     cors.add(app.router.add_get('/test', test_route, name='test'))
-    cors.add(app.router.add_get('/test/influx', test_influx, name='test_influx'))
+    cors.add(app.router.add_get('/test/influx', test_influx_write, name='test_influx_write'))
+    cors.add(app.router.add_get('/test/influx/get', test_influx_get, name='test_influx_get'))
 
     logger.info("Starting server at %s:%s", IP, PORT)
     srv = await loop.create_server(app.make_handler(), IP, PORT)
@@ -50,6 +51,12 @@ async def test_route(request):
     return web.json_response({"message": "Hello world!"})
 
 
-async def test_influx(request):
+async def test_influx_write(request):
     """Route to test influx db"""
-    return web.json_response({'message': 'Not implemented'})
+    value = write_test_point()
+    return web.json_response({'value': value})
+
+async def test_influx_get(request):
+    """Route to test influx db, get test points"""
+    result = get_test_points()
+    return web.json_response({'value': result})

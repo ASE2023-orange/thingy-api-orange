@@ -14,10 +14,12 @@ services:
       - "5432:5432"
     networks:
       - keycloak-network
+      - backend
 
   keycloak:
     image: quay.io/keycloak/keycloak:22.0.4
     command: "start-dev"
+    restart: always
     environment:
       KEYCLOAK_ADMIN: root
       KEYCLOAK_ADMIN_PASSWORD: password
@@ -35,10 +37,30 @@ services:
       - postgres
     networks:
       - keycloak-network
+  
+  influxdb:
+    image: influxdb:2.7-alpine
+    restart: always
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: root
+      DOCKER_INFLUXDB_INIT_PASSWORD: password
+      DOCKER_INFLUXDB_INIT_ORG: thingy-orange
+      DOCKER_INFLUXDB_INIT_BUCKET: thingy-data
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: Influxsuperusertokenfordevelopmentpleasechangeinproduction
+    volumes:
+      - influx-data:/var/lib/influxdb2
+    ports:
+      - "8086:8086"
+    networks:
+      - backend
+
 
 networks:
   keycloak-network:
     driver: bridge
+  backend:
 
 volumes:
   pg-data:
+  influx-data:
