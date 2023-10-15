@@ -37,9 +37,9 @@ async def init_app(loop):
     })
 
     # TODO: add all routes here
-    cors.add(app.router.add_get('/test', test_route, name='test'))
-    cors.add(app.router.add_get('/test/influx', test_influx_write, name='test_influx_write'))
-    cors.add(app.router.add_get('/test/influx/get', test_influx_get, name='test_influx_get'))
+    cors.add(app.router.add_get('/api/test', test_route, name='test'))
+    cors.add(app.router.add_get('/api/test/influx', test_influx_write, name='test_influx_write'))
+    cors.add(app.router.add_get('/api/test/influx/get', test_influx_get, name='test_influx_get'))
 
     logger.info("Starting server at %s:%s", IP, PORT)
     srv = await loop.create_server(app.make_handler(), IP, PORT)
