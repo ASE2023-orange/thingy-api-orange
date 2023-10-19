@@ -1,11 +1,16 @@
+from os import getenv
+
+from dotenv import load_dotenv
 import paho.mqtt.client as mqtt
 
+# take environment variables from api.env
+load_dotenv(dotenv_path='api.env')
 # MQTT parameters
-mqtt_broker = "163.172.151.151"
-mqtt_port = 1889 
-mqtt_topic = "things/+/shadow/update"
-mqtt_username = "orange"
-mqtt_password = "3mxNdz9W7G"
+mqtt_broker = getenv('MQTT_BROKER')
+mqtt_port = int(getenv('MQTT_PORT'))
+mqtt_username = getenv('MQTT_USERNAME')
+mqtt_password = getenv('MQTT_PASSWORD')
+mqtt_topic = 'things/+/shadow/update'
 
 
 def on_connect(client, userdata, flags, rc):
@@ -19,7 +24,7 @@ def on_message(client, userdata, msg):
     print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
 
 
-def start_mqtt():
+async def start_mqtt(loop):
     client = mqtt.Client()
 
     # set callbacks
@@ -30,6 +35,6 @@ def start_mqtt():
     client.username_pw_set(mqtt_username, mqtt_password)
 
     # establish conneciton
-    client.connect(mqtt_broker, mqtt_port, 60)
+    client.connect_async(mqtt_broker, mqtt_port, 60)
 
-    client.loop_forever()
+    client.loop_start()
