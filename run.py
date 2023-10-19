@@ -4,11 +4,12 @@ from aiohttp import web
 
 from thingy_api import init_app
 
-loop = get_event_loop()
-# init_app() is the entry point of the api
-loop.run_until_complete(init_app(loop))
+if __name__ == "__main__":
+    loop = get_event_loop()
+    # init_app() is the entry point of the api
+    loop.run_until_complete(init_app(loop))
 
-try:
-    loop.run_forever()
-except KeyboardInterrupt:
-    pass
+    try:
+        loop.run_forever()
+    except KeyboardInterrupt:
+        pass
