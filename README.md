@@ -26,6 +26,7 @@ In order to test the API, a test user is required. It can be created on the keyc
 - Create two clients:
   - Frontend: add a client ID and make sure that "Client authentication" is **disabled**.
   - Backend: Same as frontend, but "OAuth 2.0 Device Authorization Grant" must be **enabled** and client authentication set to **enabled**.
+- On the frontend client settings, go to "Login Theme" and set "thingy".
 
 ### Setup environment variables
 - Copy "api.env.example" to "api.env" at the root of the project and adapt if needed. Default values will do for a local environment (localhost:8080 for api).

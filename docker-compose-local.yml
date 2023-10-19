@@ -32,6 +32,8 @@ services:
       KC_DB_USERNAME: root
       KC_DB_PASSWORD: password
       KC_DB_SCHEMA: keycloak
+    volumes:
+      - ./keycloak_theme/thingy:/opt/keycloak/themes/thingy
     ports:
       - "8888:8080"
     depends_on:
