@@ -57,7 +57,7 @@ def append_data_to_backup(data, thingy_id):
         file.write(data + '\n')
 
 
-async def start_mqtt():
+def start_mqtt():
     """
     Start mqtt server using client.loop_start() to allow multiple
     services to run.

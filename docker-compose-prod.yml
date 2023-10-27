@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: thingy_db
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - keycloak-network
+      - backend
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.4
+    command: "start-dev"
+    restart: always
+    environment:
+      KEYCLOAK_ADMIN: root
+      KEYCLOAK_ADMIN_PASSWORD: password
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+      KC_DB_URL: jdbc:postgresql://postgres/thingy_db # This links to the "postgres" service above
+      #DB_URL_PORT: 5432
+      KC_DB: postgres
+      KC_DB_USERNAME: root
+      KC_DB_PASSWORD: password
+      KC_DB_SCHEMA: keycloak
+    volumes:
+      - ./keycloak_theme/thingy:/opt/keycloak/themes/thingy
+    ports:
+      - "8888:8080"
+    depends_on:
+      - postgres
+    networks:
+      - keycloak-network
+  
+  influxdb:
+    image: influxdb:2.7-alpine
+    restart: always
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: root
+      DOCKER_INFLUXDB_INIT_PASSWORD: password
+      DOCKER_INFLUXDB_INIT_ORG: thingy-orange
+      DOCKER_INFLUXDB_INIT_BUCKET: thingy-data
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: Influxsuperusertokenfordevelopmentpleasechangeinproduction
+    volumes:
+      - influx-data:/var/lib/influxdb2
+    ports:
+      - "8086:8086"
+    networks:
+      - backend
+
+  thingy_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    env_file: api.env
+    volumes:
+      - ./data:/data
+      - ./logs:/logs
+    depends_on:
+      - postgres
+      - keycloak
+    ports:
+      - "8000:8000"
+    networks:
+      - backend
+      - keycloak-network
+    
+
+
+networks:
+  keycloak-network:
+    driver: bridge
+  backend:
+
+volumes:
+  pg-data:
+  influx-data:

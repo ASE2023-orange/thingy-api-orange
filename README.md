@@ -29,7 +29,7 @@ In order to test the API, a test user is required. It can be created on the keyc
 - On the frontend client settings, go to "Login Theme" and set "thingy".
 
 ### Setup environment variables
-- Copy "api.env.example" to "api.env" at the root of the project and adapt if needed. Default values will do for a local environment (localhost:8080 for api).
+- Copy "api.env.example" to "api.env" at the root of the project and adapt if needed. Default values will do for a local environment (localhost:8000 for api).
 
 ### Setup Python API with virtual environment
 - Create a virtual environment: ```python -m venv venv``` (or similar, e.g., ```python3 -m venv venv```).
