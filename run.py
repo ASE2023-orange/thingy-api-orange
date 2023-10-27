@@ -8,10 +8,11 @@ from thingy_api.thingy_mqtt import start_mqtt
 
 if __name__ == "__main__":
     loop = get_event_loop()
-    # init_app() is the entry point of the api
 
     try:
-        loop.run_until_complete(start_mqtt(loop))
+        # start_mqtt() will listen forever for mqtt messages
+        loop.run_until_complete(start_mqtt())
+        # init_app() is the entry point of the api
         loop.run_until_complete(init_app(loop))
         loop.run_forever()
     except KeyboardInterrupt:

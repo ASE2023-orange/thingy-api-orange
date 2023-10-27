@@ -1,7 +1,14 @@
+from datetime import datetime
+import json
+import logging
 from os import getenv
+import os
+import threading
 
 from dotenv import load_dotenv
 import paho.mqtt.client as mqtt
+
+from thingy_api.influx import write_point
 
 # take environment variables from api.env
 load_dotenv(dotenv_path='api.env')
@@ -12,19 +19,49 @@ mqtt_username = getenv('MQTT_USERNAME')
 mqtt_password = getenv('MQTT_PASSWORD')
 mqtt_topic = 'things/+/shadow/update'
 
+# Contains all measurements to retain in Influxdb.
+INFLUX_DATA_IDS = ["AIR_PRESS", "AIR_QUAL", "CO2_EQUIV", 
+                   "HUMID", "LIGHT", "RSRP", "TEMP"]
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected to MQTT Broker!")
+        logging.info("Connected to MQTT Broker!")
         client.subscribe(mqtt_topic)
     else:
         print("Failed to connect, return code %d\n", rc)
+        logging.error("Failed to connect, return code %d\n", rc)
 
 def on_message(client, userdata, msg):
-    print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
+    data = msg.payload.decode()
+    # retrieves thingy's ID
+    thingy_id = msg.topic.split('/')[1] # Works only if id is in between first and second slash
+    # Append the data to the file in a non-blocking way
+    threading.Thread(target=append_data_to_backup, args=(data, thingy_id)).start()
+    # print(f"Received `{data}` from `{msg.topic}` topic")
+
+    if "appId" in json.loads(data) and json.loads(data)["appId"] in INFLUX_DATA_IDS:
+        # Only send metric data to influx, ignore others
+        send_influx(msg, thingy_id)
 
 
-async def start_mqtt(loop):
+def append_data_to_backup(data, thingy_id):
+    """Writes thingy data to a backup file inside data/ folder."""
+    # Get the current date in 'yyyymmdd' format
+    current_date = datetime.now().strftime('%Y%m%d')
+    filename = f'data/{thingy_id}/{current_date}.txt'
+
+    # Create the directory if it doesn't exist
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename, 'a') as file:
+        file.write(data + '\n')
+
+
+async def start_mqtt():
+    """
+    Start mqtt server using client.loop_start() to allow multiple
+    services to run.
+    """
     client = mqtt.Client()
 
     # set callbacks
@@ -38,3 +75,18 @@ async def start_mqtt(loop):
     client.connect_async(mqtt_broker, mqtt_port, 60)
 
     client.loop_start()
+
+
+def send_influx(msg, thingy_id):
+    """Writes thingy data to Influxdb."""
+    data = json.loads(msg.payload.decode())
+    measurement = data.get('appId') # Label
+    value = data["data"] # Value
+    # Timestamp value removed (incoherent)
+    # Using current time instead
+    # timestamp = data["ts"]
+
+    
+
+    res = write_point(value, measurement, thingy_id)
+    return res
