@@ -11,7 +11,7 @@ import paho.mqtt.client as mqtt
 from thingy_api.influx import write_point
 
 # take environment variables from api.env
-load_dotenv(dotenv_path='api.env')
+load_dotenv(dotenv_path='environments/api.env')
 # MQTT parameters
 mqtt_broker = getenv('MQTT_BROKER')
 mqtt_port = int(getenv('MQTT_PORT'))

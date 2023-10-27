@@ -12,7 +12,7 @@ from thingy_api.middleware import keycloak_middleware
 from thingy_api.thingy_mqtt import start_mqtt
 
 # take environment variables from api.env
-load_dotenv(dotenv_path='api.env')
+load_dotenv(dotenv_path='environments/api.env')
 
 # Retrieve environment variables
 IP = getenv('API_IP', 'localhost')
