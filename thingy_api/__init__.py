@@ -44,16 +44,6 @@ async def init_app(loop):
     cors.add(app.router.add_get('/api/test/influx/get', test_influx_get, name='test_influx_get'))
     cors.add(app.router.add_get('/api/thingy', thingy_data_get, name='thingy_get'))
 
-    #add SSE route to CORS configuration (unsure if really needed)
-    cors.add(app.router.add_get('/live_data', send), {
-        "http://localhost:4200": aiohttp_cors.ResourceOptions(
-                allow_credentials=True,
-                expose_headers="*",
-                allow_headers="*",
-                allow_methods="*",
-        ),
-    })
-
     logger.info("Starting server at %s:%s", IP, PORT)
     srv = await loop.create_server(app.make_handler(), IP, PORT)
     return srv
@@ -79,12 +69,3 @@ async def thingy_data_get(request):
     """Route to get thingy data"""
     result = get_thingy_data()
     return web.json_response(result)
-
-# send with SSE
-async def send(request):
-    async with sse_response(request) as resp:
-        while True:
-            data = "hello"
-            await resp.send(data)
-            await asyncio.sleep(30)
-            print('update sse')

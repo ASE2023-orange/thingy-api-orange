@@ -1,5 +1,7 @@
+import json
 from os import getenv
 from dotenv import load_dotenv
+from flask import jsonify
 import paho.mqtt.client as mqtt
 
 # take environment variables from api.env
@@ -12,6 +14,17 @@ mqtt_password = getenv('MQTT_PASSWORD')
 mqtt_topic = 'things/+/shadow/update'
 
 received_data = ''
+latest_sensor_data = {
+    'pressure': None,
+    'humidity': None,
+    'light': None
+}
+
+appId_map = {
+    "HUMID": "humidity",
+    "AIR_PRESS": "pressure",
+    "LIGHT": "light"
+}
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -23,6 +36,7 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     global received_data
     received_data = msg.payload.decode()
+    add_to_latest(received_data)
     print(f"Received `{received_data}` from `{msg.topic}` topic")
 
 
@@ -41,8 +55,14 @@ async def start_mqtt(loop):
 
     client.loop_start()
 
+def add_to_latest(message):
+    msg = json.loads(message)
+    if "appId" in msg and msg["appId"] in appId_map:
+        key = appId_map[msg["appId"]]
+        latest_sensor_data[key] = msg["data"]
+
 def get_thingy_data():
     """ returns the latest thingy data """
-    global received_data
-    return received_data
+    global latest_sensor_data
+    return latest_sensor_data
 
