@@ -1,5 +1,4 @@
 from os import getenv
-
 from dotenv import load_dotenv
 import paho.mqtt.client as mqtt
 
@@ -12,6 +11,7 @@ mqtt_username = getenv('MQTT_USERNAME')
 mqtt_password = getenv('MQTT_PASSWORD')
 mqtt_topic = 'things/+/shadow/update'
 
+received_data = ''
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -21,7 +21,9 @@ def on_connect(client, userdata, flags, rc):
         print("Failed to connect, return code %d\n", rc)
 
 def on_message(client, userdata, msg):
-    print(f"Received `{msg.payload.decode()}` from `{msg.topic}` topic")
+    global received_data
+    received_data = msg.payload.decode()
+    print(f"Received `{received_data}` from `{msg.topic}` topic")
 
 
 async def start_mqtt(loop):
@@ -38,3 +40,9 @@ async def start_mqtt(loop):
     client.connect_async(mqtt_broker, mqtt_port, 60)
 
     client.loop_start()
+
+def get_thingy_data():
+    """ returns the latest thingy data """
+    global received_data
+    return received_data
+
