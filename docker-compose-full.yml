@@ -21,14 +21,11 @@ services:
       - ./thingy-api-orange/keycloak_theme/thingy:/opt/keycloak/themes/thingy
     depends_on:
       - postgres
+    ports:
+      - 8080:8080
     networks:
       - backend
       - web
-    labels:
-      - traefik.http.routers.auth.rule=Host(`auth.thingyorange.ch`)
-      - traefik.http.routers.auth.tls=true
-      - traefik.http.routers.auth.tls.certresolver=lets-encrypt
-
   
   influxdb:
     image: influxdb:2.7-alpine
@@ -36,13 +33,11 @@ services:
     env_file: thingy-api-orange/environments/influx.env
     volumes:
       - influx-data:/var/lib/influxdb2
+    ports:
+      - 8086:8086
     networks:
       - backend
       - web
-    labels:
-      - traefik.http.routers.timeseries.rule=Host(`timeseries.thingyorange.ch`)
-      - traefik.http.routers.timeseries.tls=true
-      - traefik.http.routers.timeseries.tls.certresolver=lets-encrypt
 
   thingy_api:
     build:
@@ -56,28 +51,24 @@ services:
     depends_on:
       - postgres
       - keycloak
+    ports:
+      - 8000:8000
     networks:
       - backend
       - web
-    labels:
-      - traefik.http.routers.thingy_api.rule=Host(`api.thingyorange.ch`)
-      - traefik.http.routers.thingy_api.tls=true
-      - traefik.http.routers.thingy_api.tls.certresolver=lets-encrypt
 
   frontend:
     build:
       context: ./thingy-client-orange/
       dockerfile: ./Dockerfile
     restart: always
-    env_file:
-      - "./thingy-client-orange/.env"
+    ports:
+      - 80:80
     networks:
       - backend
       - web
-    labels:
-      - traefik.http.routers.thingy_client.rule=Host(`thingyorange.ch`)
-      - traefik.http.routers.thingy_client.tls=true
-      - traefik.http.routers.thingy_client.tls.certresolver=lets-encrypt
+    env_file:
+      - "./thingy-client-orange/.env"
 
 networks:
   backend:
