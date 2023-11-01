@@ -11,7 +11,7 @@ import paho.mqtt.client as mqtt
 from thingy_api.influx import write_point
 
 # take environment variables from api.env
-load_dotenv(dotenv_path='api.env')
+load_dotenv(dotenv_path='environments/api.env')
 # MQTT parameters
 mqtt_broker = getenv('MQTT_BROKER')
 mqtt_port = int(getenv('MQTT_PORT'))
@@ -70,7 +70,7 @@ def append_data_to_backup(data, thingy_id):
         file.write(data + '\n')
 
 
-async def start_mqtt():
+def start_mqtt():
     """
     Start mqtt server using client.loop_start() to allow multiple
     services to run.

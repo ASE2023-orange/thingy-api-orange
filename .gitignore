@@ -126,7 +126,7 @@ celerybeat.pid
 # Environments
 .env
 .venv
-env/
+#env/
 venv/
 ENV/
 env.bak/
@@ -177,5 +177,8 @@ pyrightconfig.json
 
 # Custom rules
 api.env
+influx.env
+postgres.env
+keycloak.env
 data/*
 !data/.gitkeep

@@ -1,0 +1,89 @@
+version: '3.8'
+# Make sure to place this file outside of the api project folder.
+# Both projects folder should be at the same level.
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: always
+    env_file: thingy-api-orange/environments/postgres.env
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./thingy-api-orange/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    networks:
+      - backend
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.4
+    command: "start-dev"
+    restart: always
+    env_file: thingy-api-orange/environments/keycloak.env
+    volumes:
+      - ./thingy-api-orange/keycloak_theme/thingy:/opt/keycloak/themes/thingy
+    depends_on:
+      - postgres
+    networks:
+      - backend
+      - web
+    labels:
+      - traefik.http.routers.auth.rule=Host(`auth.thingyorange.ch`)
+      - traefik.http.routers.auth.tls=true
+      - traefik.http.routers.auth.tls.certresolver=lets-encrypt
+
+  
+  influxdb:
+    image: influxdb:2.7-alpine
+    restart: always
+    env_file: thingy-api-orange/environments/influx.env
+    volumes:
+      - influx-data:/var/lib/influxdb2
+    networks:
+      - backend
+      - web
+    labels:
+      - traefik.http.routers.timeseries.rule=Host(`timeseries.thingyorange.ch`)
+      - traefik.http.routers.timeseries.tls=true
+      - traefik.http.routers.timeseries.tls.certresolver=lets-encrypt
+
+  thingy_api:
+    build:
+      context: ./thingy-api-orange
+      dockerfile: Dockerfile
+    restart: always
+    env_file: thingy-api-orange/environments/api.env
+    volumes:
+      - ./thingy-api-orange/data:/data
+      - ./thingy-api-orange/logs:/logs
+    depends_on:
+      - postgres
+      - keycloak
+    networks:
+      - backend
+      - web
+    labels:
+      - traefik.http.routers.thingy_api.rule=Host(`api.thingyorange.ch`)
+      - traefik.http.routers.thingy_api.tls=true
+      - traefik.http.routers.thingy_api.tls.certresolver=lets-encrypt
+
+  frontend:
+    build:
+      context: ./thingy-client-orange/
+      dockerfile: ./Dockerfile
+    restart: always
+    env_file:
+      - "./thingy-client-orange/.env"
+    networks:
+      - backend
+      - web
+    labels:
+      - traefik.http.routers.thingy_client.rule=Host(`thingyorange.ch`)
+      - traefik.http.routers.thingy_client.tls=true
+      - traefik.http.routers.thingy_client.tls.certresolver=lets-encrypt
+
+networks:
+  backend:
+  web:
+    external: true
+
+volumes:
+  pg-data:
+  influx-data:

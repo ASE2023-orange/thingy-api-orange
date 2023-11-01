@@ -8,7 +8,7 @@ from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 # take environment variables from api.env
-load_dotenv(dotenv_path='api.env')
+load_dotenv(dotenv_path='environments/api.env')
 
 token = getenv("INFLUXDB_TOKEN")
 org = getenv("INFLUXDB_ORG")

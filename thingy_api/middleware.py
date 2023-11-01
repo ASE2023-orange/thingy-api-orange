@@ -6,7 +6,7 @@ from aiohttp import web
 from dotenv import load_dotenv
 
 # take environment variables from api.env
-load_dotenv(dotenv_path='api.env')
+load_dotenv(dotenv_path='environments/api.env')
 
 server_url = getenv('KEYCLOAK_URL')
 client_id = getenv('KEYCLOAK_CLIENT_ID')

@@ -8,10 +8,11 @@ from dotenv import load_dotenv
 
 from thingy_api.influx import get_test_points, write_test_point
 from thingy_api.middleware import keycloak_middleware
+from thingy_api.thingy_mqtt import start_mqtt
 from thingy_api.thingy_mqtt import get_thingy_data
 
 # take environment variables from api.env
-load_dotenv(dotenv_path='api.env')
+load_dotenv(dotenv_path='environments/api.env')
 
 # Retrieve environment variables
 IP = getenv('API_IP', 'localhost')
@@ -21,7 +22,7 @@ PORT = getenv('API_PORT', '8000')
 logging.basicConfig(
     level=logging.INFO,  # Set the logging level as needed (e.g., INFO, DEBUG, ERROR)
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    filename='api.log',  # Set the filename for your log file
+    filename='logs/api.log',  # Set the filename for your log file
     filemode='a'  # 'a' appends to the log file, 'w' overwrites it
 )
 # Configure log rotation (log file management, max 1Mb)
@@ -32,10 +33,19 @@ log_handler = RotatingFileHandler(
 log_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 logging.getLogger().addHandler(log_handler)
 
-async def init_app(loop):
+
+async def main():
+    # Start the MQTT client
+    start_mqtt()
+
+    # Initialize the aiohttp app
+    return init_app()
+
+
+def init_app():
 
     # Create app, also including credential checker middleware
-    app = web.Application(loop=loop, middlewares=[keycloak_middleware])
+    app = web.Application(middlewares=[keycloak_middleware])
 
     # Configure default CORS settings.
     # TODO: modify according to the frontend url (if it should not be accessed somewhere else)
@@ -54,9 +64,18 @@ async def init_app(loop):
     cors.add(app.router.add_get('/api/test/influx/get', test_influx_get, name='test_influx_get'))
     cors.add(app.router.add_get('/api/thingy', thingy_data_get, name='thingy_get'))
 
-    logging.info("Starting server at %s:%s", IP, PORT)
-    srv = await loop.create_server(app.make_handler(), IP, PORT)
-    return srv
+    # logging.info("Starting server at %s:%s", IP, PORT)
+    # srv = await loop.create_server(app.make_handler(), IP, PORT)
+    # return srv
+
+    # runner = web.AppRunner(app)
+    # await runner.setup()
+    # logging.info("Starting server at %s:%s", IP, PORT)
+    # site = web.TCPSite(runner, '0.0.0.0', 8000)
+    # await site.start()
+    return app
+
+    # await web.run_app(app, host='0.0.0.0', port=8000)
 
 
 async def test_route(request):
