@@ -6,7 +6,6 @@ import os
 import threading
 
 from dotenv import load_dotenv
-from flask import jsonify
 import paho.mqtt.client as mqtt
 
 from thingy_api.influx import write_point

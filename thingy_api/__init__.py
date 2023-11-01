@@ -15,7 +15,7 @@ load_dotenv(dotenv_path='api.env')
 
 # Retrieve environment variables
 IP = getenv('API_IP', 'localhost')
-PORT = getenv('API_PORT', '8080')
+PORT = getenv('API_PORT', '8000')
 
 # setup logs
 logging.basicConfig(
