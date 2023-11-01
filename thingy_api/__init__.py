@@ -1,4 +1,3 @@
-
 import logging
 from logging.handlers import RotatingFileHandler
 from os import getenv
@@ -9,6 +8,7 @@ from dotenv import load_dotenv
 
 from thingy_api.influx import get_test_points, write_test_point
 from thingy_api.middleware import keycloak_middleware
+from thingy_api.thingy_mqtt import get_thingy_data
 
 # take environment variables from api.env
 load_dotenv(dotenv_path='api.env')
@@ -52,6 +52,7 @@ async def init_app(loop):
     cors.add(app.router.add_get('/api/test', test_route, name='test'))
     cors.add(app.router.add_get('/api/test/influx', test_influx_write, name='test_influx_write'))
     cors.add(app.router.add_get('/api/test/influx/get', test_influx_get, name='test_influx_get'))
+    cors.add(app.router.add_get('/api/thingy', thingy_data_get, name='thingy_get'))
 
     logging.info("Starting server at %s:%s", IP, PORT)
     srv = await loop.create_server(app.make_handler(), IP, PORT)
@@ -72,3 +73,9 @@ async def test_influx_get(request):
     """Route to test influx db, get test points"""
     result = get_test_points()
     return web.json_response({'value': result})
+
+# get request without automatic update in FE 
+async def thingy_data_get(request):
+    """Route to get thingy data"""
+    result = get_thingy_data()
+    return web.json_response(result)

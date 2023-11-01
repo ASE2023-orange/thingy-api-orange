@@ -6,6 +6,7 @@ import os
 import threading
 
 from dotenv import load_dotenv
+from flask import jsonify
 import paho.mqtt.client as mqtt
 
 from thingy_api.influx import write_point
@@ -19,6 +20,17 @@ mqtt_username = getenv('MQTT_USERNAME')
 mqtt_password = getenv('MQTT_PASSWORD')
 mqtt_topic = 'things/+/shadow/update'
 
+latest_sensor_data = {
+    'pressure': None,
+    'humidity': None,
+    'light': None
+}
+
+appId_map = {
+    "HUMID": "humidity",
+    "AIR_PRESS": "pressure",
+    "LIGHT": "light"
+}
 # Contains all measurements to retain in Influxdb.
 INFLUX_DATA_IDS = ["AIR_PRESS", "AIR_QUAL", "CO2_EQUIV", 
                    "HUMID", "LIGHT", "RSRP", "TEMP"]
@@ -32,8 +44,10 @@ def on_connect(client, userdata, flags, rc):
         print("Failed to connect, return code %d\n", rc)
         logging.error("Failed to connect, return code %d\n", rc)
 
-def on_message(client, userdata, msg):
+def on_message(client, userdata, msg):  
     data = msg.payload.decode()
+    print(f"Received `{data}` from `{msg.topic}` topic")
+    add_to_latest(data)
     # retrieves thingy's ID
     thingy_id = msg.topic.split('/')[1] # Works only if id is in between first and second slash
     # Append the data to the file in a non-blocking way
@@ -76,6 +90,11 @@ async def start_mqtt():
 
     client.loop_start()
 
+def add_to_latest(message):
+    msg = json.loads(message)
+    if "appId" in msg and msg["appId"] in appId_map:
+        key = appId_map[msg["appId"]]
+        latest_sensor_data[key] = msg["data"]
 
 def send_influx(msg, thingy_id):
     """Writes thingy data to Influxdb."""
@@ -86,7 +105,10 @@ def send_influx(msg, thingy_id):
     # Using current time instead
     # timestamp = data["ts"]
 
-    
-
     res = write_point(value, measurement, thingy_id)
     return res
+
+def get_thingy_data():
+    """ returns the latest thingy data """
+    global latest_sensor_data
+    return latest_sensor_data
