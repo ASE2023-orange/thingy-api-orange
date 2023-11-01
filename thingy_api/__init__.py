@@ -1,11 +1,9 @@
-import asyncio
 import logging
+from logging.handlers import RotatingFileHandler
 from os import getenv
 
 import aiohttp_cors
 from aiohttp import web
-from aiohttp.web import Response
-from aiohttp_sse import sse_response
 from dotenv import load_dotenv
 
 from thingy_api.influx import get_test_points, write_test_point
@@ -19,8 +17,20 @@ load_dotenv(dotenv_path='api.env')
 IP = getenv('API_IP', 'localhost')
 PORT = getenv('API_PORT', '8080')
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# setup logs
+logging.basicConfig(
+    level=logging.INFO,  # Set the logging level as needed (e.g., INFO, DEBUG, ERROR)
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    filename='api.log',  # Set the filename for your log file
+    filemode='a'  # 'a' appends to the log file, 'w' overwrites it
+)
+# Configure log rotation (log file management, max 1Mb)
+# Changes log file when reaching 1MB, keeping 3 backup files.
+log_handler = RotatingFileHandler(
+    'logs/api.log', maxBytes=1024*1024, backupCount=3
+)
+log_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+logging.getLogger().addHandler(log_handler)
 
 async def init_app(loop):
 
@@ -44,7 +54,7 @@ async def init_app(loop):
     cors.add(app.router.add_get('/api/test/influx/get', test_influx_get, name='test_influx_get'))
     cors.add(app.router.add_get('/api/thingy', thingy_data_get, name='thingy_get'))
 
-    logger.info("Starting server at %s:%s", IP, PORT)
+    logging.info("Starting server at %s:%s", IP, PORT)
     srv = await loop.create_server(app.make_handler(), IP, PORT)
     return srv
 

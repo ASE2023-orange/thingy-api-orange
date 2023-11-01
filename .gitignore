@@ -177,3 +177,5 @@ pyrightconfig.json
 
 # Custom rules
 api.env
+data/*
+!data/.gitkeep
