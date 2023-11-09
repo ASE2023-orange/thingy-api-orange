@@ -1,3 +1,9 @@
+"""
+Influx utils file.
+Created by: Jean-Marie Alder on 9 november 2023
+Updated by: Jean-Marie Alder on 9 november 2023
+"""
+
 import random
 import time
 from os import getenv

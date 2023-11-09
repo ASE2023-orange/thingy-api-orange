@@ -1,3 +1,10 @@
+"""
+Middleware for authentication with Keycloak.
+This is an aiohttp middleware, make sure to add it
+to the app object when creating the api.
+Created by: Jean-Marie Alder on 9 november 2023
+"""
+
 import logging
 from os import getenv
 

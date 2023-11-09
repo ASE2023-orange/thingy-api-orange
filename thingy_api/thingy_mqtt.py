@@ -1,3 +1,9 @@
+"""
+MQTT utils file.
+Created by: Leyla Kandé on 9 november 2023
+Updated by: Leyla Kandé on 9 november 2023
+"""
+
 from datetime import datetime
 import json
 import logging

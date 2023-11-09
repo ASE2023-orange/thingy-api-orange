@@ -1,3 +1,9 @@
+"""
+Main file to start mqtt and api servers.
+Created by: Jean-Marie Alder on 9 november 2023
+Updated by: Leyla Kandé on 9 november 2023
+"""
+
 import logging
 from logging.handlers import RotatingFileHandler
 from os import getenv

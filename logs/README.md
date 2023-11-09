@@ -1,0 +1,1 @@
+Folder containing logs from the api. Log files are renamed and recreated when exceeding a size limit.

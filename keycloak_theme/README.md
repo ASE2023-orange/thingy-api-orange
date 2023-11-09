@@ -1,0 +1,1 @@
+Custom keycloak theme for login page. This folder should be a docker volume for the Keycloak container to customize it.

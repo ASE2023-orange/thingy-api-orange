@@ -1,12 +1,10 @@
+# Dockerfile to build production API with Gunicorn WSGI
+
 FROM python:3.10
-# For raspberry pi, user python-buster instead of slim-buster
 
 COPY requirements.txt /
-
 RUN pip install -r requirements.txt
-
 COPY . /
-
 WORKDIR /
 
 EXPOSE 8000
