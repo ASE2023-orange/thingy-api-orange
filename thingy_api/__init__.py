@@ -4,6 +4,7 @@ Created by: Jean-Marie Alder on 9 november 2023
 Updated by: Leyla Kandé on 9 november 2023
 """
 
+import json
 import logging
 from logging.handlers import RotatingFileHandler
 from os import getenv
@@ -103,4 +104,7 @@ async def test_influx_get(request):
 async def thingy_data_get(request):
     """Route to get thingy data"""
     result = get_thingy_data()
-    return web.json_response(result)
+    serialized_result = json.dumps(result)
+    print(serialized_result)
+
+    return web.json_response(serialized_result)
