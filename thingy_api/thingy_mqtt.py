@@ -19,11 +19,7 @@ mqtt_username = getenv('MQTT_USERNAME')
 mqtt_password = getenv('MQTT_PASSWORD')
 mqtt_topic = 'things/+/shadow/update'
 
-latest_sensor_data = {
-    'pressure': None,
-    'humidity': None,
-    'light': None
-}
+latest_sensor_data = { }
 
 appId_map = {
     "HUMID": "humidity",
@@ -46,9 +42,10 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):  
     data = msg.payload.decode()
     print(f"Received `{data}` from `{msg.topic}` topic")
-    add_to_latest(data)
     # retrieves thingy's ID
     thingy_id = msg.topic.split('/')[1] # Works only if id is in between first and second slash
+    #Update real-time on FE 
+    add_to_latest(data, thingy_id)
     # Append the data to the file in a non-blocking way
     threading.Thread(target=append_data_to_backup, args=(data, thingy_id)).start()
     # print(f"Received `{data}` from `{msg.topic}` topic")
@@ -89,11 +86,16 @@ def start_mqtt():
 
     client.loop_start()
 
-def add_to_latest(message):
+def add_to_latest(message, thingy_id):
     msg = json.loads(message)
+
+    #create sensor data object if thingy id unknonw
+    if thingy_id not in latest_sensor_data:
+        latest_sensor_data[thingy_id] = {}
+
     if "appId" in msg and msg["appId"] in appId_map:
         key = appId_map[msg["appId"]]
-        latest_sensor_data[key] = msg["data"]
+        latest_sensor_data[thingy_id][key] = msg["data"]
 
 def send_influx(msg, thingy_id):
     """Writes thingy data to Influxdb."""
