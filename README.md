@@ -65,3 +65,25 @@ To setup authentication, follow the following steps on the "Authorization" tab a
 - Client Secret: YourSecretHere
 - Client Authentication: "Send as Basic Auth header"
 Once configured, click on "Get New Access Token". A login prompt will appear. Enter your test user credentials (keycloak admin won't work). If redirected successfully, the token should be available. Click "Use Token" to automatically add it to each request.
+
+## Production Setup
+This section briefly describes steps to host the application on a production server. This guide is an example and should be adapted. Some seconary steps are only mentionned and the organization is responsible for it's setup.
+
+### Requirements
+- A server, or VPS, with min. 4Go RAM and two processor cores.
+- A URL, e.g., myproject.ch.
+- The URL should have these subdomains setup on a DNS server:
+  - myproject.ch
+  - auth.myproject.ch
+  - timeseries.myproject.ch
+  - api.myproject.ch
+- Docker should be installed.
+### Procedure
+- On the server, setup a reverse proxy, e.g., Traefik, that will monitor the "web" Docker network. There is an example setup inside labels of the docker-compose-prod.yml file.
+- Create a folder for the project, e.g., "thingy_orange", inside "/srv".
+- Clone both repositories (api, client) inside this root folder.
+- Adapt environment variables of both backend (environments folder) and frontend (.env).
+- Adapt docker-compose-prod file to match your needs.
+- Copy and paste the docker-compose-prod.yml file to the root folder of the entire project (here, "thingy_orange"). Rename it to "docker-compose.yml"
+- To start all services, run ```docker compose up -d --build --force-recreate```. Use this command everytime you need to update the platform.
+- For debugging, have a look at docker container logs and the api logs inside "thingy-api-orange/logs/api.log".
