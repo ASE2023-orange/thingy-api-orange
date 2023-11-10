@@ -15,6 +15,8 @@ from dotenv import load_dotenv
 
 from thingy_api.influx import get_test_points, write_test_point
 from thingy_api.middleware import keycloak_middleware
+import thingy_api.dal.plant as plant_dal
+import thingy_api.dal.user as user_dal
 from thingy_api.thingy_mqtt import start_mqtt
 from thingy_api.thingy_mqtt import get_thingy_data
 
@@ -71,18 +73,14 @@ def init_app():
     cors.add(app.router.add_get('/api/test/influx/get', test_influx_get, name='test_influx_get'))
     cors.add(app.router.add_get('/api/thingy', thingy_data_get, name='thingy_get'))
 
-    # logging.info("Starting server at %s:%s", IP, PORT)
-    # srv = await loop.create_server(app.make_handler(), IP, PORT)
-    # return srv
+    cors.add(app.router.add_post('/api/plants/create', create_plant, name='create_plant'))
+    cors.add(app.router.add_get('/api/plants/create/dev', create_plant_dev, name='create_plant_dev'))
+    cors.add(app.router.add_get('/api/plants', get_all_plants, name='get_all_plants'))
+    cors.add(app.router.add_get('/api/plants/{id}', get_plant, name='get_plant'))
+    cors.add(app.router.add_delete('/api/plants/{id}', delete_plant, name='delete_plant'))
+    cors.add(app.router.add_patch('/api/plants/{id}', update_plant, name='update_plant'))
 
-    # runner = web.AppRunner(app)
-    # await runner.setup()
-    # logging.info("Starting server at %s:%s", IP, PORT)
-    # site = web.TCPSite(runner, '0.0.0.0', 8000)
-    # await site.start()
     return app
-
-    # await web.run_app(app, host='0.0.0.0', port=8000)
 
 
 async def test_route(request):
@@ -108,3 +106,61 @@ async def thingy_data_get(request):
     print(serialized_result)
 
     return web.json_response(serialized_result)
+
+
+async def create_plant(request):
+    data = await request.json()
+    result = plant_dal.create_plant(data)
+    return web.json_response(result)
+
+
+async def create_plant_dev(request):
+    """Create a new plant in the database"""
+    plant_data_1 = {
+        'friendly_name': 'Bundeshaus Energie',
+        'thingy_id': 'orange-1',
+        'locality': 'Bern',
+        'npa': '3001',
+        'lat': 46.947050,
+        'lng': 7.444104,
+        'max_power': 2500,
+        'nr_panels': 200,
+        'contact_person': user_dal.get_user_dev()["id"]
+    }
+    plant_data_2 = {
+        'friendly_name': 'Romande Energie',
+        'thingy_id': 'orange-2',
+        'locality': 'Echichens',
+        'npa': '1112',
+        'lat': 46.526240,
+        'lng': 6.498429,
+        'max_power': 1000,
+        'nr_panels': 50,
+        'contact_person': user_dal.get_user_dev()["id"]
+    }
+    plant_dal.create_plant(plant_data_1)
+    result = plant_dal.create_plant(plant_data_2)
+    return web.json_response(result)
+
+
+async def get_all_plants(request):
+    return web.json_response(plant_dal.get_all_plants())
+
+
+async def get_plant(request):
+    id = str(request.match_info['id'])
+    result = plant_dal.get_plant(id)
+    return web.json_response(result)
+
+
+async def update_plant(request):
+    id = str(request.match_info['id'])
+    data = await request.json()
+    result = plant_dal.update_plant(id, data)
+    return web.json_response(result)
+
+
+async def delete_plant(request):
+    id = str(request.match_info['id'])
+    result = plant_dal.delete_plant(id)
+    return web.json_response(result)

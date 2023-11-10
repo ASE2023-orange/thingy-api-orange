@@ -7,7 +7,7 @@ CREATE SCHEMA IF NOT EXISTS keycloak;
 -- Create the "Plant" table in the "public" schema if it doesn't exist
 -- Note that the script might fail if keycloak is not initialized,
 -- if so, rerun the script manually.
-CREATE TABLE public."Plant"
+CREATE TABLE IF NOT EXISTS public."Plant"
 (
     id character varying(36) NOT NULL,
     friendly_name character varying(255),
@@ -42,3 +42,13 @@ CREATE TRIGGER tr_plant_updated_at
 BEFORE UPDATE ON public."Plant"
 FOR EACH ROW
 EXECUTE PROCEDURE trigger_set_timestamp();
+
+-- Creates table to store all known thingys id
+CREATE TABLE IF NOT EXISTS public.thingy_id
+(
+    id serial NOT NULL,
+    name character varying(255) COLLATE pg_catalog."default",
+    created_at timestamp with time zone DEFAULT now(),
+    updated_at time with time zone DEFAULT now(),
+    CONSTRAINT thingy_id_pkey PRIMARY KEY (id)
+)
