@@ -7,17 +7,12 @@ from os import getenv
 
 import psycopg2
 
+from . import db_pool
 
 def get_all_thingy_ids():
     """Get all thingy_ids."""
     # Establish a connection to your PostgreSQL database
-    with psycopg2.connect(
-        dbname="thingy_db",
-        user=getenv('DB_USER'),
-        password=getenv('DB_PASSWORD'),
-        host=getenv('DB_URL'),
-        port=getenv('DB_PORT')
-    ) as conn:
+    with db_pool.getconn() as conn:
         cursor = conn.cursor()
 
         query = f"SELECT * FROM public.thingy_id"
@@ -50,13 +45,7 @@ def get_all_thingy_ids():
 def add_new_id(thingy_id):
     """Create new thingy_ids."""
     # Establish a connection to your PostgreSQL database
-    with psycopg2.connect(
-        dbname="thingy_db",
-        user=getenv('DB_USER'),
-        password=getenv('DB_PASSWORD'),
-        host=getenv('DB_URL'),
-        port=getenv('DB_PORT')
-    ) as conn:
+    with db_pool.getconn() as conn:
         cursor = conn.cursor()
 
         query = f"""
@@ -80,13 +69,7 @@ def update_id(thingy_id):
     """update thingy_id timestamp. Keeps track of wether the thingy
        is active or not."""
     # Establish a connection to your PostgreSQL database
-    with psycopg2.connect(
-        dbname="thingy_db",
-        user=getenv('DB_USER'),
-        password=getenv('DB_PASSWORD'),
-        host=getenv('DB_URL'),
-        port=getenv('DB_PORT')
-    ) as conn:
+    with db_pool.getconn() as conn:
         cursor = conn.cursor()
 
         query = f"""

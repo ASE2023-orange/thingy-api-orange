@@ -6,17 +6,13 @@ from os import getenv
 
 import psycopg2
 
+from . import db_pool
+
 
 def get_user(user_id):
     """Get one user by id."""
     # Establish a connection to your PostgreSQL database
-    with psycopg2.connect(
-        dbname="thingy_db",
-        user=getenv('DB_USER'),
-        password=getenv('DB_PASSWORD'),
-        host=getenv('DB_URL'),
-        port=getenv('DB_PORT')
-    ) as conn:
+    with db_pool.getconn() as conn:
         cursor = conn.cursor()
 
         query = f"SELECT * FROM keycloak.user_entity WHERE id='{user_id}'"
@@ -40,13 +36,7 @@ def get_user(user_id):
 def get_user_dev():
     """Get the first user of the database (dev)."""
     # Establish a connection to your PostgreSQL database
-    with psycopg2.connect(
-        dbname="thingy_db",
-        user=getenv('DB_USER'),
-        password=getenv('DB_PASSWORD'),
-        host=getenv('DB_URL'),
-        port=getenv('DB_PORT')
-    ) as conn:
+    with db_pool.getconn() as conn:
         cursor = conn.cursor()
 
         query = 'SELECT * FROM keycloak.user_entity LIMIT 1'

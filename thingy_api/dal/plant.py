@@ -3,31 +3,21 @@ Access layer function for plant objects
 Created by: Jean-Marie Alder on 9 november 2023
 Updated by: Jean-Marie Alder on 10 november 2023
 """
+import uuid
 from datetime import datetime
 from decimal import Decimal
-from os import getenv
-import uuid
 
-import psycopg2
-from dotenv import load_dotenv
 from psycopg2 import sql
 
 from thingy_api.dal.user import get_user
 
-# take environment variables from api.env
-load_dotenv(dotenv_path='environments/api.env')
+from . import db_pool
 
 
 def get_all_plants():
     """Get all plants from database."""
     # Establish a connection to your PostgreSQL database
-    with psycopg2.connect(
-        dbname="thingy_db",
-        user=getenv('DB_USER'),
-        password=getenv('DB_PASSWORD'),
-        host=getenv('DB_URL'),
-        port=getenv('DB_PORT')
-    ) as conn:
+    with db_pool.getconn() as conn:
         cursor = conn.cursor()
 
         query = 'SELECT * FROM public."Plant"'
@@ -59,13 +49,7 @@ def get_all_plants():
 def get_plant(plant_id):
     """Get one plant by id from database."""
     # Establish a connection to your PostgreSQL database
-    with psycopg2.connect(
-        dbname="thingy_db",
-        user=getenv('DB_USER'),
-        password=getenv('DB_PASSWORD'),
-        host=getenv('DB_URL'),
-        port=getenv('DB_PORT')
-    ) as conn:
+    with db_pool.getconn() as conn:
         cursor = conn.cursor()
 
         query = f'SELECT * FROM public."Plant" WHERE id=\'{plant_id}\''
@@ -82,7 +66,6 @@ def get_plant(plant_id):
             modified_data = transform_data([data])[0]
 
             # Match data values to column names and put into a python dict
-            dict_data = []
             result = {col_name: value for col_name, value in zip(column_names, modified_data)}
             result["contact_person"] = get_user(result["contact_person"]) # Adds user info
             return result
@@ -99,13 +82,7 @@ def create_plant(values):
     values["id"]= str(uuid.uuid4())
 
     # Establish a connection to your PostgreSQL database
-    with psycopg2.connect(
-        dbname="thingy_db",
-        user=getenv('DB_USER'),
-        password=getenv('DB_PASSWORD'),
-        host=getenv('DB_URL'),
-        port=getenv('DB_PORT')
-    ) as conn:
+    with db_pool.getconn() as conn:
         cursor = conn.cursor()
 
         query = sql.SQL("""
@@ -129,7 +106,7 @@ def create_plant(values):
             cursor.execute(query)
             conn.commit()
             print("Plant added successfully.")
-            return get_all_plants()
+            return get_plant(values['id'])
         except Exception as e:
             conn.rollback()
             print(f"Error: {e}")
@@ -139,13 +116,7 @@ def create_plant(values):
 def update_plant(plant_id, values):
     """Update a plant by id."""
     # Establish a connection to your PostgreSQL database
-    with psycopg2.connect(
-        dbname="thingy_db",
-        user=getenv('DB_USER'),
-        password=getenv('DB_PASSWORD'),
-        host=getenv('DB_URL'),
-        port=getenv('DB_PORT')
-    ) as conn:
+    with db_pool.getconn() as conn:
         cursor = conn.cursor()
 
         query = f"""
@@ -180,13 +151,7 @@ def update_plant(plant_id, values):
 def delete_plant(plant_id):
     """Delete a plant by id."""
     # Establish a connection to your PostgreSQL database
-    with psycopg2.connect(
-        dbname="thingy_db",
-        user=getenv('DB_USER'),
-        password=getenv('DB_PASSWORD'),
-        host=getenv('DB_URL'),
-        port=getenv('DB_PORT')
-    ) as conn:
+    with db_pool.getconn() as conn:
         cursor = conn.cursor()
 
         query = f'DELETE FROM public."Plant" WHERE id=\'{plant_id}\''
