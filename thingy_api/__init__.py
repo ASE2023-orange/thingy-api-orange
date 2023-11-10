@@ -15,8 +15,7 @@ from dotenv import load_dotenv
 
 from thingy_api.influx import get_test_points, write_test_point
 from thingy_api.middleware import keycloak_middleware
-from thingy_api.thingy_mqtt import start_mqtt
-from thingy_api.thingy_mqtt import get_thingy_data
+from thingy_api.thingy_mqtt import start_mqtt, get_thingy_data, get_thingy_id_data
 
 # take environment variables from api.env
 load_dotenv(dotenv_path='environments/api.env')
@@ -70,6 +69,7 @@ def init_app():
     cors.add(app.router.add_get('/api/test/influx', test_influx_write, name='test_influx_write'))
     cors.add(app.router.add_get('/api/test/influx/get', test_influx_get, name='test_influx_get'))
     cors.add(app.router.add_get('/api/thingy', thingy_data_get, name='thingy_get'))
+    cors.add(app.router.add_get('/api/thingy/{id}', thingy_data_by_id_get, name='thingy_by_id_get'))
 
     # logging.info("Starting server at %s:%s", IP, PORT)
     # srv = await loop.create_server(app.make_handler(), IP, PORT)
@@ -105,6 +105,16 @@ async def thingy_data_get(request):
     """Route to get thingy data"""
     result = get_thingy_data()
     serialized_result = json.dumps(result)
-    print(serialized_result)
-
     return web.json_response(serialized_result)
+
+async def thingy_data_by_id_get(request):
+    """Route to get thingy data for ID"""
+    thingy_id = request.match_info.get('id')
+    result = get_thingy_id_data(thingy_id)
+
+    if result is not None:
+        serialized_result = json.dumps(result)
+        return web.json_response(serialized_result)
+    else:
+        # Case in which requested ID does not exist
+        return web.Response(status=404, text="Thingy not found")

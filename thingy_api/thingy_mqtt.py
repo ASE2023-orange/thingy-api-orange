@@ -119,3 +119,8 @@ def get_thingy_data():
     """ returns the latest thingy data """
     global latest_sensor_data
     return latest_sensor_data
+
+def get_thingy_id_data(thingy_id):
+    """ returns the latest thingy data for ID"""
+    id_data = { thingy_id: latest_sensor_data[thingy_id]}
+    return id_data
