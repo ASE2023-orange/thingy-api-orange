@@ -80,6 +80,8 @@ def init_app():
     cors.add(app.router.add_delete('/api/plants/{id}', delete_plant, name='delete_plant'))
     cors.add(app.router.add_patch('/api/plants/{id}', update_plant, name='update_plant'))
 
+    cors.add(app.router.add_get('/api/users', get_all_users, name='get_all_users'))
+
     return app
 
 
@@ -106,6 +108,10 @@ async def thingy_data_get(request):
     print(serialized_result)
 
     return web.json_response(serialized_result)
+
+
+########################################
+# PLANTS ROUTES
 
 
 async def create_plant(request):
@@ -163,4 +169,12 @@ async def update_plant(request):
 async def delete_plant(request):
     id = str(request.match_info['id'])
     result = plant_dal.delete_plant(id)
+    return web.json_response(result)
+
+
+###########################################
+# USERS ROUTES
+
+async def get_all_users(request):
+    result = user_dal.get_all_users()
     return web.json_response(result)

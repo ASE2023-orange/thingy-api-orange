@@ -129,7 +129,7 @@ def create_plant(values):
             cursor.execute(query)
             conn.commit()
             print("Plant added successfully.")
-            return get_all_plants()
+            return get_plant(values['id'])
         except Exception as e:
             conn.rollback()
             print(f"Error: {e}")
