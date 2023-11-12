@@ -48,6 +48,7 @@ async def keycloak_middleware(request: web.Request, handler):
     
     except Exception as e:
         # Handle other exceptions
-        print(e)
+        # print("middleware error")
+        # print(e.with_traceback())
         logging.error(e)
         return web.Response(text="Internal server error", status=500)

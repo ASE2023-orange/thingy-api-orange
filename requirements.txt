@@ -3,5 +3,6 @@ aiohttp-cors==0.7.0
 gunicorn==21.2.0
 influxdb-client==1.38.0
 paho-mqtt==1.6.1
+psycopg2==2.9.9
 python-dotenv==1.0.0
 python-keycloak==3.3.0
