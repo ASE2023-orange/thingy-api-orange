@@ -1,9 +1,10 @@
 """
 Influx utils file.
 Created by: Jean-Marie Alder on 9 november 2023
-Updated by: Jean-Marie Alder on 9 november 2023
+Updated by: Jean-Marie Alder on 12 november 2023
 """
 
+import logging
 import random
 import time
 from os import getenv
@@ -34,16 +35,20 @@ def write_point(value, measurement, thingy_id):
         # light measurement must be treated separately
         write_light_points(value, thingy_id)
     else:
-        # Write to Influxdb using InfluxDBClient
-        write_client = influxdb_client.InfluxDBClient(url=url, token=token, org=org)
-        write_api = write_client.write_api(write_options=SYNCHRONOUS)
-        point = (
-            Point(measurement)
-            .tag("location", thingy_id)
-            .field("value", float(value))
-        )
-        write_api.write(bucket=bucket, org="thingy-orange", record=point)
-        return value
+        try:
+            # Write to Influxdb using InfluxDBClient
+            write_client = influxdb_client.InfluxDBClient(url=url, token=token, org=org)
+            write_api = write_client.write_api(write_options=SYNCHRONOUS)
+            point = (
+                Point(measurement)
+                .tag("location", thingy_id)
+                .field("value", float(value))
+            )
+            write_api.write(bucket=bucket, org="thingy-orange", record=point)
+            return value
+        except Exception as e:
+            logging.error(e)
+            return value
     
 
 def write_light_points(value, thingy_id):
@@ -51,16 +56,20 @@ def write_light_points(value, thingy_id):
     labels = ['RED', 'GREEN', 'BLUE', 'INFRARED']
     values = value.split(' ')
 
-    # Write to influx all 4 values, only creating influxdb client once.
-    write_client = influxdb_client.InfluxDBClient(url=url, token=token, org=org)
-    write_api = write_client.write_api(write_options=SYNCHRONOUS)
-    for i in range(len(values)):
-        point = (
-            Point(labels[i])
-            .tag("location", thingy_id)
-            .field("value", float(values[i]))
-        )
-        write_api.write(bucket=bucket, org="thingy-orange", record=point)
+    try:
+        # Write to influx all 4 values, only creating influxdb client once.
+        write_client = influxdb_client.InfluxDBClient(url=url, token=token, org=org)
+        write_api = write_client.write_api(write_options=SYNCHRONOUS)
+        for i in range(len(values)):
+            point = (
+                Point(labels[i])
+                .tag("location", thingy_id)
+                .field("value", float(values[i]))
+            )
+            write_api.write(bucket=bucket, org="thingy-orange", record=point)
+    except Exception as e:
+        logging.error(e)
+        return value
 
 
 def write_test_point():

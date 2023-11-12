@@ -51,7 +51,6 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, msg):  
     data = msg.payload.decode()
-    print(f"Received `{data}` from `{msg.topic}` topic")
     add_to_latest(data)
     # retrieves thingy's ID
     thingy_id = msg.topic.split('/')[1] # Works only if id is in between first and second slash
