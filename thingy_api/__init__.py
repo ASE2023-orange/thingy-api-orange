@@ -106,8 +106,7 @@ async def test_influx_get(request):
 async def thingy_data_get(request):
     """Route to get thingy data"""
     result = get_thingy_data()
-    serialized_result = json.dumps(result)
-    return web.json_response(serialized_result)
+    return web.json_response(result)
 
 async def thingy_data_by_id_get(request):
     """Route to get thingy data for ID"""
@@ -115,12 +114,10 @@ async def thingy_data_by_id_get(request):
     result = get_thingy_id_data(thingy_id)
 
     if result is not None:
-        serialized_result = json.dumps(result)
-        return web.json_response(serialized_result)
+        return web.json_response(result)
     else:
         # Case in which requested ID does not exist
         return web.Response(status=404, text="Thingy not found")
-    return web.json_response(serialized_result)
 
 
 ########################################
