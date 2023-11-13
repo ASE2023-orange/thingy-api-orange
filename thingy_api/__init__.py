@@ -17,6 +17,7 @@ from thingy_api.influx import get_test_points, write_test_point
 from thingy_api.middleware import keycloak_middleware
 import thingy_api.dal.plant as plant_dal
 import thingy_api.dal.user as user_dal
+import thingy_api.dal.thingy_id as thingy_id_dal
 from thingy_api.thingy_mqtt import start_mqtt
 from thingy_api.thingy_mqtt import get_thingy_data
 from thingy_api.thingy_mqtt import start_mqtt, get_thingy_data, get_thingy_id_data
@@ -75,6 +76,8 @@ def init_app():
     cors.add(app.router.add_get('/api/thingy', thingy_data_get, name='thingy_get'))
     cors.add(app.router.add_get('/api/thingy/{id}', thingy_data_by_id_get, name='thingy_by_id_get'))
 
+    cors.add(app.router.add_get('/api/thingy_id', get_all_thingy_ids, name='get_all_thingy_ids'))
+
     cors.add(app.router.add_post('/api/plants/create', create_plant, name='create_plant'))
     cors.add(app.router.add_get('/api/plants/create/dev', create_plant_dev, name='create_plant_dev'))
     cors.add(app.router.add_get('/api/plants', get_all_plants, name='get_all_plants'))
@@ -119,6 +122,10 @@ async def thingy_data_by_id_get(request):
         # Case in which requested ID does not exist
         return web.Response(status=404, text="Thingy not found")
 
+
+async def get_all_thingy_ids(request):
+    result = thingy_id_dal.get_all_thingy_ids()
+    return web.json_response(result)
 
 ########################################
 # PLANTS ROUTES
