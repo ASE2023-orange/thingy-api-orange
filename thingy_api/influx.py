@@ -4,6 +4,7 @@ Created by: Jean-Marie Alder on 9 november 2023
 Updated by: Jean-Marie Alder on 9 november 2023
 """
 
+from datetime import datetime
 import random
 import time
 from os import getenv
@@ -77,6 +78,56 @@ def write_test_point():
     )
     write_api.write(bucket=bucket, org="thingy-orange", record=point)
     return value
+
+
+def get_plant_simple_history(thingy_id):
+    """Returns the air pressure, temperature and humidity of the 
+    previous 24 hours for a specific plant.
+    :param thingy_id: id of the plant's thingy."""
+    client = influxdb_client.InfluxDBClient(url=url, token=token, org=org)
+    query_api = client.query_api()
+
+    query = f'''
+        from(bucket: "{bucket}")
+            |> range(start: -24h)
+            |> filter(fn: (r) => r["_measurement"] == "TEMP" or r["_measurement"] == "HUMID" or r["_measurement"] == "AIR_PRESS")
+            |> filter(fn: (r) => r["location"] == "{thingy_id}")
+            |> aggregateWindow(every: 10m, fn: mean, createEmpty: false)
+    '''
+    # Execute the query
+    result = query_api.query(org=org, query=query)
+
+    # Process the result into the desired format
+    data = {"timestamps": [], "datasets": []}
+    
+    for table in result:
+        for record in table.records:
+            timestamp = datetime.timestamp(record["_time"])
+
+            if timestamp not in data["timestamps"]:
+                data["timestamps"].append(timestamp)
+
+            measurement = record["_measurement"]
+            value = record["_value"]
+
+            # Find or create dataset for the measurement
+            dataset = next((d for d in data["datasets"] if d["label"] == measurement), None)
+            if not dataset:
+                dataset = {
+                    "label": measurement,
+                    "data": [],
+                    "borderColor": f"rgba({255 if measurement == 'TEMP' else 0}, {255 if measurement == 'HUMID' else 0}, {255 if measurement == 'AIR_PRESS' else 0}, 1)",
+                    "fill": False,
+                }
+                data["datasets"].append(dataset)
+
+            # Append data point to the dataset
+            dataset["data"].append(value)
+    
+    print(data)
+    return data
+
+
 
 
 def get_test_points():

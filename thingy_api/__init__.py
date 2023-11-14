@@ -13,7 +13,7 @@ import aiohttp_cors
 from aiohttp import web
 from dotenv import load_dotenv
 
-from thingy_api.influx import get_test_points, write_test_point
+from thingy_api.influx import get_plant_simple_history, write_test_point
 from thingy_api.middleware import keycloak_middleware
 import thingy_api.dal.plant as plant_dal
 import thingy_api.dal.user as user_dal
@@ -102,8 +102,8 @@ async def test_influx_write(request):
 
 async def test_influx_get(request):
     """Route to test influx db, get test points"""
-    result = get_test_points()
-    return web.json_response({'value': result})
+    result = get_plant_simple_history("orange-1")
+    return web.json_response(result)
 
 # get request without automatic update in FE 
 async def thingy_data_get(request):
