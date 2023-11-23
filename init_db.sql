@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS public."Plant"
     max_power integer,
     nr_panels integer,
     contact_person character varying(36),
-    created_at bigint DEFAULT NOW(),
-    updated_at bigint DEFAULT NOW(),
+    created_at timestamp DEFAULT NOW(),
+    updated_at timestamp DEFAULT NOW(),
     PRIMARY KEY (id),
     CONSTRAINT fk_plant_user FOREIGN KEY (contact_person)
         REFERENCES keycloak.user_entity (id) MATCH SIMPLE
