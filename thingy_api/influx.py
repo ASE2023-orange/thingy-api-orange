@@ -98,14 +98,14 @@ def get_plant_simple_history(thingy_id):
     result = query_api.query(org=org, query=query)
 
     # Process the result into the desired format
-    data = {"timestamps": [], "datasets": []}
+    data = {"labels": [], "datasets": []}
     
     for table in result:
         for record in table.records:
             timestamp = datetime.timestamp(record["_time"])
 
-            if timestamp not in data["timestamps"]:
-                data["timestamps"].append(timestamp)
+            if timestamp not in data["labels"]:
+                data["labels"].append(timestamp)
 
             measurement = record["_measurement"]
             value = record["_value"]
