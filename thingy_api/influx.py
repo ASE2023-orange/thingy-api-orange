@@ -17,10 +17,10 @@ from influxdb_client.client.write_api import SYNCHRONOUS
 # take environment variables from api.env
 load_dotenv(dotenv_path='environments/api.env')
 
-token = getenv("INFLUXDB_TOKEN")
-org = getenv("INFLUXDB_ORG")
-url = getenv("INFLUXDB_URL")
-bucket = getenv("INFLUXDB_BUCKET")
+token = getenv("INFLUXDB_TOKEN", "default")
+org = getenv("INFLUXDB_ORG", "default")
+url = getenv("INFLUXDB_URL", "localhost")
+bucket = getenv("INFLUXDB_BUCKET", "default")
 
 
 def write_point(value, measurement, thingy_id):
@@ -92,7 +92,7 @@ def get_plant_simple_history(thingy_id):
             |> range(start: -24h)
             |> filter(fn: (r) => r["_measurement"] == "TEMP" or r["_measurement"] == "HUMID" or r["_measurement"] == "AIR_PRESS")
             |> filter(fn: (r) => r["location"] == "{thingy_id}")
-            |> aggregateWindow(every: 10m, fn: mean, createEmpty: false)
+            |> aggregateWindow(every: 5m, fn: mean, createEmpty: false)
     '''
     # Execute the query
     result = query_api.query(org=org, query=query)
@@ -126,7 +126,6 @@ def get_plant_simple_history(thingy_id):
     
     print(data)
     return data
-
 
 
 

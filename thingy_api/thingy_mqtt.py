@@ -20,10 +20,10 @@ from thingy_api.influx import write_point
 # take environment variables from api.env
 load_dotenv(dotenv_path='environments/api.env')
 # MQTT parameters
-mqtt_broker = getenv('MQTT_BROKER')
-mqtt_port = int(getenv('MQTT_PORT'))
-mqtt_username = getenv('MQTT_USERNAME')
-mqtt_password = getenv('MQTT_PASSWORD')
+mqtt_broker = getenv('MQTT_BROKER', "127.0.0.1")
+mqtt_port = int(getenv('MQTT_PORT', "1889"))
+mqtt_username = getenv('MQTT_USERNAME', "user")
+mqtt_password = getenv('MQTT_PASSWORD', "password")
 mqtt_topic = 'things/+/shadow/update'
 
 latest_sensor_data = { }
