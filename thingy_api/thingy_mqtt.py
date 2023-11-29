@@ -4,32 +4,29 @@ Created by: Leyla Kandé on 9 november 2023
 Updated by: Leyla Kandé on 9 november 2023
 """
 
-from datetime import datetime
 import json
 import logging
-from os import getenv
 import os
 import threading
+from datetime import datetime
+from os import getenv
 
-from dotenv import load_dotenv
 import paho.mqtt.client as mqtt
+from dotenv import load_dotenv
 
+from thingy_api.dal.thingy_id import add_new_id, get_all_thingy_ids, update_id
 from thingy_api.influx import write_point
 
 # take environment variables from api.env
 load_dotenv(dotenv_path='environments/api.env')
 # MQTT parameters
-mqtt_broker = getenv('MQTT_BROKER')
-mqtt_port = int(getenv('MQTT_PORT'))
-mqtt_username = getenv('MQTT_USERNAME')
-mqtt_password = getenv('MQTT_PASSWORD')
+mqtt_broker = getenv('MQTT_BROKER', "127.0.0.1")
+mqtt_port = int(getenv('MQTT_PORT', "1889"))
+mqtt_username = getenv('MQTT_USERNAME', "user")
+mqtt_password = getenv('MQTT_PASSWORD', "password")
 mqtt_topic = 'things/+/shadow/update'
 
-latest_sensor_data = {
-    'pressure': None,
-    'humidity': None,
-    'light': None
-}
+latest_sensor_data = { }
 
 appId_map = {
     "HUMID": "humidity",
@@ -51,9 +48,12 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, msg):  
     data = msg.payload.decode()
-    add_to_latest(data)
     # retrieves thingy's ID
     thingy_id = msg.topic.split('/')[1] # Works only if id is in between first and second slash
+
+    update_thingy_id_list(thingy_id)
+    #Update real-time on FE 
+    add_to_latest(data, thingy_id)
     # Append the data to the file in a non-blocking way
     threading.Thread(target=append_data_to_backup, args=(data, thingy_id)).start()
     # print(f"Received `{data}` from `{msg.topic}` topic")
@@ -94,11 +94,16 @@ def start_mqtt():
 
     client.loop_start()
 
-def add_to_latest(message):
+def add_to_latest(message, thingy_id):
     msg = json.loads(message)
+
+    #create sensor data object if thingy id unknonw
+    if thingy_id not in latest_sensor_data:
+        latest_sensor_data[thingy_id] = {}
+
     if "appId" in msg and msg["appId"] in appId_map:
         key = appId_map[msg["appId"]]
-        latest_sensor_data[key] = msg["data"]
+        latest_sensor_data[thingy_id][key] = msg["data"]
 
 def send_influx(msg, thingy_id):
     """Writes thingy data to Influxdb."""
@@ -116,3 +121,15 @@ def get_thingy_data():
     """ returns the latest thingy data """
     global latest_sensor_data
     return latest_sensor_data
+
+def get_thingy_id_data(thingy_id):
+    """ returns the latest thingy data for ID"""
+    id_data = { thingy_id: latest_sensor_data[thingy_id]}
+    return id_data
+
+def update_thingy_id_list(thingy_id):
+    existing = get_all_thingy_ids()
+    if thingy_id not in existing:
+        add_new_id(thingy_id)
+    else:
+        update_id(thingy_id)

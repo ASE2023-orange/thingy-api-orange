@@ -4,6 +4,7 @@ Created by: Jean-Marie Alder on 9 november 2023
 Updated by: Leyla Kandé on 9 november 2023
 """
 
+import json
 import logging
 from logging.handlers import RotatingFileHandler
 from os import getenv
@@ -12,10 +13,14 @@ import aiohttp_cors
 from aiohttp import web
 from dotenv import load_dotenv
 
-from thingy_api.influx import get_test_points, write_test_point
+from thingy_api.influx import get_plant_simple_history, write_test_point
 from thingy_api.middleware import keycloak_middleware
+import thingy_api.dal.plant as plant_dal
+import thingy_api.dal.user as user_dal
+import thingy_api.dal.thingy_id as thingy_id_dal
 from thingy_api.thingy_mqtt import start_mqtt
 from thingy_api.thingy_mqtt import get_thingy_data
+from thingy_api.thingy_mqtt import start_mqtt, get_thingy_data, get_thingy_id_data
 
 # take environment variables from api.env
 load_dotenv(dotenv_path='environments/api.env')
@@ -66,28 +71,39 @@ def init_app():
 
     # TODO: add all routes here
     cors.add(app.router.add_get('/api/test', test_route, name='test'))
+
+    # Historical data actions
     cors.add(app.router.add_get('/api/test/influx', test_influx_write, name='test_influx_write'))
     cors.add(app.router.add_get('/api/test/influx/get', test_influx_get, name='test_influx_get'))
+    cors.add(app.router.add_get('/api/influx/{id}', influx_get_for, name='influx_get_for'))
+
+    # currrent data actions
     cors.add(app.router.add_get('/api/thingy', thingy_data_get, name='thingy_get'))
+    cors.add(app.router.add_get('/api/thingy/{id}', thingy_data_by_id_get, name='thingy_by_id_get'))
 
-    # logging.info("Starting server at %s:%s", IP, PORT)
-    # srv = await loop.create_server(app.make_handler(), IP, PORT)
-    # return srv
+    # thingy actions
+    cors.add(app.router.add_get('/api/thingy_id', get_all_thingy_ids, name='get_all_thingy_ids'))
 
-    # runner = web.AppRunner(app)
-    # await runner.setup()
-    # logging.info("Starting server at %s:%s", IP, PORT)
-    # site = web.TCPSite(runner, '0.0.0.0', 8000)
-    # await site.start()
+    # plant actions 
+    cors.add(app.router.add_post('/api/plants/create', create_plant, name='create_plant'))
+    cors.add(app.router.add_get('/api/plants/create/dev', create_plant_dev, name='create_plant_dev'))
+    cors.add(app.router.add_get('/api/plants', get_all_plants, name='get_all_plants'))
+    cors.add(app.router.add_get('/api/plants/{id}', get_plant, name='get_plant'))
+    cors.add(app.router.add_delete('/api/plants/{id}', delete_plant, name='delete_plant'))
+    cors.add(app.router.add_patch('/api/plants/{id}', update_plant, name='update_plant'))
+
+    # user actions
+    cors.add(app.router.add_get('/api/users', get_all_users, name='get_all_users'))
+
     return app
-
-    # await web.run_app(app, host='0.0.0.0', port=8000)
 
 
 async def test_route(request):
     """Hello world route, to make sure that api is working"""
     return web.json_response({"message": "Hello world!"})
 
+########################################
+# INFLUX ROUTES
 
 async def test_influx_write(request):
     """Route to test influx db"""
@@ -96,11 +112,109 @@ async def test_influx_write(request):
 
 async def test_influx_get(request):
     """Route to test influx db, get test points"""
-    result = get_test_points()
-    return web.json_response({'value': result})
+    result = get_plant_simple_history("orange-1")
+    return web.json_response(result)
+
+async def influx_get_for(request):
+    """Route to get influx data for thingy ID"""
+    thingy_id = request.match_info.get('id')
+    result = get_plant_simple_history(thingy_id)
+    if result is not None:
+        return web.json_response(result)
+    else:
+        # Case in which requested ID does not exist
+        return web.Response(status=404, text="Thingy not found")
+
+########################################
+# THINGY ROUTES
 
 # get request without automatic update in FE 
 async def thingy_data_get(request):
     """Route to get thingy data"""
     result = get_thingy_data()
+    return web.json_response(result)
+
+async def thingy_data_by_id_get(request):
+    """Route to get thingy data for ID"""
+    thingy_id = request.match_info.get('id')
+    result = get_thingy_id_data(thingy_id)
+
+    if result is not None:
+        return web.json_response(result)
+    else:
+        # Case in which requested ID does not exist
+        return web.Response(status=404, text="Thingy not found")
+
+
+async def get_all_thingy_ids(request):
+    result = thingy_id_dal.get_all_thingy_ids()
+    return web.json_response(result)
+
+########################################
+# PLANTS ROUTES
+
+
+async def create_plant(request):
+    data = await request.json()
+    result = plant_dal.create_plant(data)
+    return web.json_response(result)
+
+
+async def create_plant_dev(request):
+    """Create a new plant in the database"""
+    plant_data_1 = {
+        'friendly_name': 'Bundeshaus Energie',
+        'thingy_id': 'orange-1',
+        'locality': 'Bern',
+        'npa': '3001',
+        'lat': 46.947050,
+        'lng': 7.444104,
+        'max_power': 2500,
+        'nr_panels': 200,
+        'contact_person': user_dal.get_user_dev()["id"]
+    }
+    plant_data_2 = {
+        'friendly_name': 'Romande Energie',
+        'thingy_id': 'orange-3',
+        'locality': 'Echichens',
+        'npa': '1112',
+        'lat': 46.526240,
+        'lng': 6.498429,
+        'max_power': 1000,
+        'nr_panels': 50,
+        'contact_person': user_dal.get_user_dev()["id"]
+    }
+    plant_dal.create_plant(plant_data_1)
+    result = plant_dal.create_plant(plant_data_2)
+    return web.json_response(result)
+
+
+async def get_all_plants(request):
+    return web.json_response(plant_dal.get_all_plants())
+
+
+async def get_plant(request):
+    id = str(request.match_info['id'])
+    result = plant_dal.get_plant(id)
+    return web.json_response(result)
+
+
+async def update_plant(request):
+    id = str(request.match_info['id'])
+    data = await request.json()
+    result = plant_dal.update_plant(id, data)
+    return web.json_response(result)
+
+
+async def delete_plant(request):
+    id = str(request.match_info['id'])
+    result = plant_dal.delete_plant(id)
+    return web.json_response(result)
+
+
+###########################################
+# USERS ROUTES
+
+async def get_all_users(request):
+    result = user_dal.get_all_users()
     return web.json_response(result)
