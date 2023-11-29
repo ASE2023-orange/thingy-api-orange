@@ -71,13 +71,20 @@ def init_app():
 
     # TODO: add all routes here
     cors.add(app.router.add_get('/api/test', test_route, name='test'))
+
+    # Historical data actions
     cors.add(app.router.add_get('/api/test/influx', test_influx_write, name='test_influx_write'))
     cors.add(app.router.add_get('/api/test/influx/get', test_influx_get, name='test_influx_get'))
+    cors.add(app.router.add_get('/api/influx/{id}', influx_get_for, name='influx_get_for'))
+
+    # currrent data actions
     cors.add(app.router.add_get('/api/thingy', thingy_data_get, name='thingy_get'))
     cors.add(app.router.add_get('/api/thingy/{id}', thingy_data_by_id_get, name='thingy_by_id_get'))
 
+    # thingy actions
     cors.add(app.router.add_get('/api/thingy_id', get_all_thingy_ids, name='get_all_thingy_ids'))
 
+    # plant actions 
     cors.add(app.router.add_post('/api/plants/create', create_plant, name='create_plant'))
     cors.add(app.router.add_get('/api/plants/create/dev', create_plant_dev, name='create_plant_dev'))
     cors.add(app.router.add_get('/api/plants', get_all_plants, name='get_all_plants'))
@@ -85,6 +92,7 @@ def init_app():
     cors.add(app.router.add_delete('/api/plants/{id}', delete_plant, name='delete_plant'))
     cors.add(app.router.add_patch('/api/plants/{id}', update_plant, name='update_plant'))
 
+    # user actions
     cors.add(app.router.add_get('/api/users', get_all_users, name='get_all_users'))
 
     return app
@@ -94,6 +102,8 @@ async def test_route(request):
     """Hello world route, to make sure that api is working"""
     return web.json_response({"message": "Hello world!"})
 
+########################################
+# INFLUX ROUTES
 
 async def test_influx_write(request):
     """Route to test influx db"""
@@ -104,6 +114,19 @@ async def test_influx_get(request):
     """Route to test influx db, get test points"""
     result = get_plant_simple_history("orange-1")
     return web.json_response(result)
+
+async def influx_get_for(request):
+    """Route to get influx data for thingy ID"""
+    thingy_id = request.match_info.get('id')
+    result = get_plant_simple_history(thingy_id)
+    if result is not None:
+        return web.json_response(result)
+    else:
+        # Case in which requested ID does not exist
+        return web.Response(status=404, text="Thingy not found")
+
+########################################
+# THINGY ROUTES
 
 # get request without automatic update in FE 
 async def thingy_data_get(request):
@@ -152,7 +175,7 @@ async def create_plant_dev(request):
     }
     plant_data_2 = {
         'friendly_name': 'Romande Energie',
-        'thingy_id': 'orange-2',
+        'thingy_id': 'orange-3',
         'locality': 'Echichens',
         'npa': '1112',
         'lat': 46.526240,
