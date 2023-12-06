@@ -33,12 +33,24 @@ RANGE_MAP = {
 UNIT_MAP = {
     "TEMP": "Temperature °C",
     "HUMID": "Humidity %",
-    "AIR_PRESS": "Air pressure (hPa/10)"
+    "AIR_PRESS": "Air pressure (hPa/10)",
+    "AIR_QUAL": "Air pollution",
+    "BLUE": "Blue",
+    "GREEN": "Green",
+    "INFRARED": "Infrared",
+    "RED": "Red",
+    "RSRP": "RSRP"
 }
 COLOR_MAP = {
     "TEMP": "rgba(255, 0, 0, 1)",
     "HUMID": "rgba(0, 255, 0, 1)",
-    "AIR_PRESS": "rgba(0, 0, 255, 1)"
+    "AIR_PRESS": "rgba(0, 0, 255, 1)",
+    "AIR_QUAL": "rgba(255, 165, 0, 1)",    # Orange
+    "BLUE": "rgba(0, 0, 128, 1)",         # Dark Blue
+    "GREEN": "rgba(0, 128, 0, 1)",        # Green
+    "INFRARED": "rgba(128, 0, 0, 1)",     # Dark Red
+    "RED": "rgba(255, 0, 255, 1)",        # Magenta
+    "RSRP": "rgba(128, 128, 128, 1)"      # Gray
 }
 
 def write_point(value, measurement, thingy_id):
@@ -124,7 +136,16 @@ def get_plant_simple_history(thingy_id, range):
     query = f'''
         from(bucket: "{bucket}")
             |> range(start: -{range})
-            |> filter(fn: (r) => r["_measurement"] == "TEMP" or r["_measurement"] == "HUMID" or r["_measurement"] == "AIR_PRESS")
+            |> filter(fn: (r) => r["_measurement"] == "TEMP" 
+                or r["_measurement"] == "HUMID" 
+                or r["_measurement"] == "AIR_PRESS"
+                or r["_measurement"] == "AIR_QUAL"
+                or r["_measurement"] == "BLUE"
+                or r["_measurement"] == "GREEN"
+                or r["_measurement"] == "INFRARED"
+                or r["_measurement"] == "RED"
+                or r["_measurement"] == "RSRP"
+                )
             |> filter(fn: (r) => r["location"] == "{thingy_id}")
             |> aggregateWindow(every: {window}, fn: mean, createEmpty: false)
     '''
