@@ -1,7 +1,7 @@
 """
 Main file to start mqtt and api servers.
 Created by: Jean-Marie Alder on 9 november 2023
-Updated by: Leyla Kandé on 9 november 2023
+Updated by: JMA on 6 dec 2023
 """
 
 import json
@@ -75,7 +75,7 @@ def init_app():
     # Historical data actions
     cors.add(app.router.add_get('/api/test/influx', test_influx_write, name='test_influx_write'))
     cors.add(app.router.add_get('/api/test/influx/get', test_influx_get, name='test_influx_get'))
-    cors.add(app.router.add_get('/api/influx/{id}', influx_get_for, name='influx_get_for'))
+    cors.add(app.router.add_get('/api/influx/{id}/{range}', influx_get_for, name='influx_get_for'))
 
     # currrent data actions
     cors.add(app.router.add_get('/api/thingy', thingy_data_get, name='thingy_get'))
@@ -112,13 +112,17 @@ async def test_influx_write(request):
 
 async def test_influx_get(request):
     """Route to test influx db, get test points"""
-    result = get_plant_simple_history("orange-1")
+    result = get_plant_simple_history("orange-1", "1d")
     return web.json_response(result)
 
 async def influx_get_for(request):
     """Route to get influx data for thingy ID"""
     thingy_id = request.match_info.get('id')
-    result = get_plant_simple_history(thingy_id)
+    range = request.match_info.get('range')
+    # Check if range is in accepted format
+    if range not in ["30d", "15d", "7d", "1d", "1h"]: 
+        return web.Response(status=404, text="Time range not allowed")
+    result = get_plant_simple_history(thingy_id, range)
     if result is not None:
         return web.json_response(result)
     else:
