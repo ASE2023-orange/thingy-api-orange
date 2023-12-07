@@ -24,9 +24,9 @@ url = getenv("INFLUXDB_URL", "localhost")
 bucket = getenv("INFLUXDB_BUCKET", "default")
 
 RANGE_MAP = {
-    "30d": "1h",
-    "15d": "30m",
-    "7d": "15m",
+    "30d": "2h",
+    "15d": "1h",
+    "7d": "30m",
     "1d": "10m",
     "1h": "1m",
 }
