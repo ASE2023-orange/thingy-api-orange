@@ -37,7 +37,7 @@ async def refresh_weather_info():
         except Exception as e:
             print("Error when fetching weather data.")
     
-    print("Done fetching weather data")
+    # print("Done fetching weather data")
 
     set_light_quality()
 
@@ -58,7 +58,6 @@ def set_light_quality():
 
     # Set all current plant light quality and color for thingy led.
     for plant_id, weather_info in current_weather.items():
-        print("test")
         cloud_cover = weather_info["clouds"]["all"]
         light_quality = 2
         color = 'FFFF00'

@@ -3,6 +3,7 @@ Access layer function for thingy_id objects
 Created by: Jean-Marie Alder on 10 november 2023
 """
 
+import logging
 from os import getenv
 
 import psycopg2
@@ -68,7 +69,7 @@ def add_new_id(thingy_id):
             # Execute the INSERT query
             cursor.execute(query)
             conn.commit()
-            print("thingy_id added successfully.")
+            logging.info(f"thingy_id added successfully. {thingy_id}")
             return get_all_thingy_ids()
         except Exception as e:
             conn.rollback()

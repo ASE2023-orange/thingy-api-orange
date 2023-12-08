@@ -180,7 +180,7 @@ def get_plant_simple_history(thingy_id, range):
             # Append data point to the dataset
             dataset["data"].append(value)
     
-    print(data)
+    # print(data)
     return data
 
 

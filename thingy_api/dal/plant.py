@@ -5,6 +5,7 @@ Updated by: Jean-Marie Alder on 10 november 2023
 """
 from datetime import datetime
 from decimal import Decimal
+import logging
 from os import getenv
 import uuid
 
@@ -128,7 +129,7 @@ def create_plant(values):
             # Execute the INSERT query
             cursor.execute(query)
             conn.commit()
-            print("Plant added successfully.")
+            logging.info(f"Plant added successfully. {values['friendly_name'], values['id']}")
             return get_plant(values['id'])
         except Exception as e:
             conn.rollback()
@@ -169,7 +170,7 @@ def update_plant(plant_id, values):
             # Execute the INSERT query
             cursor.execute(query)
             conn.commit()
-            print("Plant modified successfully.")
+            logging.info(f"Plant modified successfully. {values['friendly_name'], values['id']}")
             return get_plant(plant_id)
         except Exception as e:
             conn.rollback()
@@ -195,7 +196,7 @@ def delete_plant(plant_id):
             # Execute the DELETE query
             cursor.execute(query)
             conn.commit()
-            print("Plant deleted successfully.")
+            logging.info(f"Plant deleted successfully. {plant_id}")
             return get_all_plants()
         except Exception as e:
             conn.rollback()
