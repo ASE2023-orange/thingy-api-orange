@@ -1,10 +1,10 @@
 """
 Main file to start mqtt and api servers.
 Created by: Jean-Marie Alder on 9 november 2023
-Updated by: JMA on 6 dec 2023
+Updated by: JMA on 8 dec 2023
 """
 
-import json
+import asyncio
 import logging
 from logging.handlers import RotatingFileHandler
 from os import getenv
@@ -21,6 +21,7 @@ import thingy_api.dal.thingy_id as thingy_id_dal
 from thingy_api.thingy_mqtt import start_mqtt
 from thingy_api.thingy_mqtt import get_thingy_data
 from thingy_api.thingy_mqtt import start_mqtt, get_thingy_data, get_thingy_id_data
+from thingy_api.weather import refresh_weather_info
 
 # take environment variables from api.env
 load_dotenv(dotenv_path='environments/api.env')
@@ -49,8 +50,20 @@ async def main():
     # Start the MQTT client
     start_mqtt()
 
+    # Get initial light quality 
+    await refresh_weather_info()
+    # Schedule get_light_quality() every 2 minutes
+    asyncio.create_task(schedule_task(refresh_weather_info, interval_seconds=120))
+
     # Initialize the aiohttp app
     return init_app()
+
+
+async def schedule_task(task_function, interval_seconds):
+    """Custom method to run scheduled tasks."""
+    while True:
+        await asyncio.sleep(interval_seconds)
+        await task_function()
 
 
 def init_app():

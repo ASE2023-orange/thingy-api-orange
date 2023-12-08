@@ -1,7 +1,7 @@
 """
 MQTT utils file.
 Created by: Leyla Kandé on 9 november 2023
-Updated by: Leyla Kandé on 9 november 2023
+Updated by: JMA on 8 dec 2023
 """
 
 import json
@@ -12,6 +12,7 @@ from datetime import datetime
 from os import getenv
 
 import paho.mqtt.client as mqtt
+import paho.mqtt.publish as publish
 from dotenv import load_dotenv
 
 from thingy_api.dal.thingy_id import add_new_id, get_all_thingy_ids, update_id
@@ -61,6 +62,35 @@ def on_message(client, userdata, msg):
     if "appId" in json.loads(data) and json.loads(data)["appId"] in INFLUX_DATA_IDS:
         # Only send metric data to influx, ignore others
         send_influx(msg, thingy_id)
+
+
+def publish_led_color(thingy_id, color):
+    """Changes led color of the selected thingy using a publish message."""
+    try:
+        topic = f'things/{thingy_id}/shadow/update/accepted'
+        payload = {
+            "appId": "LED",
+            "data": {
+                "color": color
+            },
+            "messageType": "CFG_SET"
+        }
+        payload_str = json.dumps(payload)
+
+        auth = {'username': mqtt_username, 'password': mqtt_password}
+
+        publish.single(
+            topic,
+            payload=payload_str,
+            qos=1,
+            retain=False,
+            hostname=mqtt_broker,
+            port=mqtt_port,
+            auth=auth # type: ignore
+        )
+    except Exception as e:
+        logging.error(e)
+
 
 
 def append_data_to_backup(data, thingy_id):
