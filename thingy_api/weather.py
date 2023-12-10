@@ -1,7 +1,7 @@
 """
 Weather utility file (light quailty, current weather, forecast)
 Created by: JMA on 8 dec 2023
-Updated by: JMA on 8 dec 2023
+Updated by: JMA on 10 dec 2023
 """
 
 import logging
@@ -88,5 +88,19 @@ def set_light_quality():
             publish_led_color(thingy_id, color)
 
 
+def get_current_light_quality(plant_id):
+    """Getter for current light quality
+    :param: plant_id"""
+    try:
+        return current_light_quality[plant_id]
+    except Exception as e:
+        logging.error(f"Error on get_current_light_quality for plant {plant_id}")
+        return 2
 
 
+def add_light_quality_to_plants(plants):
+    print(plants)
+    for plant in plants:
+        plant["light_quality"] = current_light_quality[plant["id"]]
+        print(plant)
+    return plants

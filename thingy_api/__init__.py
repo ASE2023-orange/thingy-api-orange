@@ -1,7 +1,7 @@
 """
 Main file to start mqtt and api servers.
 Created by: Jean-Marie Alder on 9 november 2023
-Updated by: JMA on 8 dec 2023
+Updated by: JMA on 10 dec 2023
 """
 
 import asyncio
@@ -21,7 +21,7 @@ import thingy_api.dal.thingy_id as thingy_id_dal
 from thingy_api.thingy_mqtt import start_mqtt
 from thingy_api.thingy_mqtt import get_thingy_data
 from thingy_api.thingy_mqtt import start_mqtt, get_thingy_data, get_thingy_id_data
-from thingy_api.weather import refresh_weather_info
+from thingy_api.weather import add_light_quality_to_plants, get_current_light_quality, refresh_weather_info
 
 # take environment variables from api.env
 load_dotenv(dotenv_path='environments/api.env')
@@ -104,6 +104,9 @@ def init_app():
     cors.add(app.router.add_get('/api/plants/{id}', get_plant, name='get_plant'))
     cors.add(app.router.add_delete('/api/plants/{id}', delete_plant, name='delete_plant'))
     cors.add(app.router.add_patch('/api/plants/{id}', update_plant, name='update_plant'))
+    cors.add(app.router.add_get('/api/map/plants', get_all_plants_map, name='get_all_plants_map'))
+
+    cors.add(app.router.add_get('/api/plants/light/{id}', get_plant_light_quality, name='get_plant_light_quality'))
 
     # user actions
     cors.add(app.router.add_get('/api/users', get_all_users, name='get_all_users'))
@@ -227,6 +230,18 @@ async def delete_plant(request):
     id = str(request.match_info['id'])
     result = plant_dal.delete_plant(id)
     return web.json_response(result)
+
+
+async def get_all_plants_map(request):
+    plants = plant_dal.get_all_plants()
+    plants_final = add_light_quality_to_plants(plants)
+    return web.json_response(plants_final)
+
+
+async def get_plant_light_quality(request):
+    id = str(request.match_info['id'])
+    result = get_current_light_quality(id)
+    return web.json_response({"light_quality": result})
 
 
 ###########################################
