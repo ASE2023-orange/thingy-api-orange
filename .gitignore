@@ -183,3 +183,5 @@ postgres.env
 keycloak.env
 data/*
 !data/.gitkeep
+
+.vscode/*
