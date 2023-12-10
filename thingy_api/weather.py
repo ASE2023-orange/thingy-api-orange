@@ -99,8 +99,6 @@ def get_current_light_quality(plant_id):
 
 
 def add_light_quality_to_plants(plants):
-    print(plants)
     for plant in plants:
         plant["light_quality"] = current_light_quality[plant["id"]]
-        print(plant)
     return plants
