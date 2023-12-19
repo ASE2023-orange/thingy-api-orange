@@ -14,6 +14,7 @@ from os import getenv
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 from dotenv import load_dotenv
+from thingy_api.dal.plant import toggle_maintenance
 
 from thingy_api.dal.thingy_id import add_new_id, get_all_thingy_ids, update_id
 from thingy_api.influx import write_point
@@ -51,17 +52,22 @@ def on_message(client, userdata, msg):
     data = msg.payload.decode()
     # retrieves thingy's ID
     thingy_id = msg.topic.split('/')[1] # Works only if id is in between first and second slash
+    message = json.loads(data)
 
-    update_thingy_id_list(thingy_id)
-    #Update real-time on FE 
-    add_to_latest(data, thingy_id)
-    # Append the data to the file in a non-blocking way
-    threading.Thread(target=append_data_to_backup, args=(data, thingy_id)).start()
-    # print(f"Received `{data}` from `{msg.topic}` topic")
+    if "appId" in message and message["appId"] == "BUTTON" and message["data"] == "1":
+        print("button click")
+        update_maintenance(thingy_id)
+    else: 
+        update_thingy_id_list(thingy_id)
+        #Update real-time on FE 
+        add_to_latest(message, thingy_id)
+        # Append the data to the file in a non-blocking way
+        threading.Thread(target=append_data_to_backup, args=(data, thingy_id)).start()
+        # print(f"Received `{data}` from `{msg.topic}` topic")
 
-    if "appId" in json.loads(data) and json.loads(data)["appId"] in INFLUX_DATA_IDS:
-        # Only send metric data to influx, ignore others
-        send_influx(msg, thingy_id)
+        if "appId" in json.loads(data) and json.loads(data)["appId"] in INFLUX_DATA_IDS:
+            # Only send metric data to influx, ignore others
+            send_influx(message, thingy_id)
 
 
 def publish_led_color(thingy_id, color):
@@ -90,7 +96,6 @@ def publish_led_color(thingy_id, color):
         )
     except Exception as e:
         logging.error(e)
-
 
 
 def append_data_to_backup(data, thingy_id):
@@ -124,9 +129,7 @@ def start_mqtt():
 
     client.loop_start()
 
-def add_to_latest(message, thingy_id):
-    msg = json.loads(message)
-
+def add_to_latest(msg, thingy_id):
     #create sensor data object if thingy id unknonw
     if thingy_id not in latest_sensor_data:
         latest_sensor_data[thingy_id] = {}
@@ -137,9 +140,8 @@ def add_to_latest(message, thingy_id):
 
 def send_influx(msg, thingy_id):
     """Writes thingy data to Influxdb."""
-    data = json.loads(msg.payload.decode())
-    measurement = data.get('appId') # Label
-    value = data["data"] # Value
+    measurement = msg.get('appId') # Label
+    value = msg["data"] # Value
     # Timestamp value removed (incoherent)
     # Using current time instead
     # timestamp = data["ts"]
@@ -163,3 +165,6 @@ def update_thingy_id_list(thingy_id):
         add_new_id(thingy_id)
     else:
         update_id(thingy_id)
+
+def update_maintenance(thingy_id):
+    toggle_maintenance(thingy_id)

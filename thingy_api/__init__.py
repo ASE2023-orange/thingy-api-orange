@@ -1,7 +1,7 @@
 """
 Main file to start mqtt and api servers.
 Created by: Jean-Marie Alder on 9 november 2023
-Updated by: JMA on 10 dec 2023
+Updated by: LK on 19 dec 2023
 """
 
 import asyncio
@@ -49,6 +49,8 @@ logging.getLogger().addHandler(log_handler)
 async def main():
     # Start the MQTT client
     start_mqtt()
+    # Reset maintenance status
+    plant_dal.reset_maintenance()
 
     # Get initial light quality 
     await refresh_weather_info()
