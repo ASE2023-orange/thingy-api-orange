@@ -1,7 +1,7 @@
 """
 Weather utility file (light quailty, current weather, forecast)
 Created by: JMA on 8 dec 2023
-Updated by: JMA on 10 dec 2023
+Updated by: JMA on 19 dec 2023
 """
 
 import logging
@@ -96,6 +96,16 @@ def get_current_light_quality(plant_id):
     except Exception as e:
         logging.error(f"Error on get_current_light_quality for plant {plant_id}")
         return 2
+    
+
+def get_current_station_weather(plant_id):
+    """Returns plant current weather (all informations).
+    :param: plant_id"""
+    try:
+        return current_weather[plant_id]
+    except Exception as e:
+        logging.error(f"get current weather failed. {plant_id}" )
+        return {"message": "error"}
 
 
 def add_light_quality_to_plants(plants):
