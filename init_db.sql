@@ -52,3 +52,16 @@ CREATE TABLE IF NOT EXISTS public.thingy_id
     updated_at time with time zone DEFAULT now(),
     CONSTRAINT thingy_id_pkey PRIMARY KEY (id)
 )
+
+-- Table: public.Maintenance
+
+CREATE TABLE IF NOT EXISTS public."Maintenance"
+(
+    thingy_id character varying COLLATE pg_catalog."default" NOT NULL,
+    created_at timestamp without time zone DEFAULT now(),
+    updated_at timestamp without time zone DEFAULT now(),
+    maintenance_start timestamp without time zone[],
+    maintenance_end timestamp without time zone[],
+    maintenance_status boolean DEFAULT false,
+    CONSTRAINT "Maintenance_pkey" PRIMARY KEY (thingy_id)
+)

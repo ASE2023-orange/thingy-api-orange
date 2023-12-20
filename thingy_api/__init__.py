@@ -267,7 +267,6 @@ async def get_plant_maintenance(request):
 async def get_maintenance_history(request):
     id = str(request.match_info['id'])
     result = maintenance_dal.get_maintenance_history(id)
-    print(result)
     return web.json_response(result)
 
 ###########################################

@@ -2,6 +2,7 @@
 Access layer function for users.
 Created by: Jean-Marie Alder on 10 november 2023
 """
+import logging
 from os import getenv
 
 import psycopg2
@@ -37,7 +38,7 @@ def get_all_users():
             return dict_data
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when retrieving users."}
 
 
@@ -67,7 +68,7 @@ def get_user(user_id):
             return result
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when retrieving user."}
 
 
@@ -97,5 +98,5 @@ def get_user_dev():
             return result
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when retrieving user."}

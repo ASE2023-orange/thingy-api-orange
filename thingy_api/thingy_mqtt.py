@@ -40,11 +40,11 @@ INFLUX_DATA_IDS = ["AIR_PRESS", "AIR_QUAL", "CO2_EQUIV",
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
-        print("Connected to MQTT Broker!")
+        print("Connected to MQTT Broker!") # Keep this log for container info
         logging.info("Connected to MQTT Broker!")
         client.subscribe(mqtt_topic)
     else:
-        print("Failed to connect, return code %d\n", rc)
+        print("Failed to connect, return code %d\n", rc) # Keep this log for container info
         logging.error("Failed to connect, return code %d\n", rc)
 
 def on_message(client, userdata, msg):  
@@ -62,7 +62,6 @@ def on_message(client, userdata, msg):
         add_to_latest(message, thingy_id)
         # Append the data to the file in a non-blocking way
         threading.Thread(target=append_data_to_backup, args=(data, thingy_id)).start()
-        # print(f"Received `{data}` from `{msg.topic}` topic")
 
         if "appId" in json.loads(data) and json.loads(data)["appId"] in INFLUX_DATA_IDS:
             # Only send metric data to influx, ignore others

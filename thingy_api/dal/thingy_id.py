@@ -44,7 +44,7 @@ def get_all_thingy_ids():
             return result
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when retrieving thingy ids."}
         
 
@@ -73,7 +73,7 @@ def add_new_id(thingy_id):
             return get_all_thingy_ids()
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when inserting a new thingy id."}
         
 
@@ -104,5 +104,5 @@ def update_id(thingy_id):
             return get_all_thingy_ids()
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when updating a thingy id."}

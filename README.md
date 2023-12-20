@@ -46,10 +46,14 @@ python3 run.py
 - To stop the local server, use ctrl+c
 - Finally, read carefully next section to know more about database. Normally, it should be plug and play and no more action is required (unless configurations in .env have been modified)
 
+
+
 ## Run API locally with debug
 _Note: Follow this section if you have already setup the api before_
 - Start all Docker container with ```docker compose -f docker-compose-local.yml up -d``` on project root folder.
 - Start the API with ```python3 run.py```
+
+
 
 ## Test local API with Postman
 To test the api without the client, Postman can be used and configured to test secured endpoints. 
@@ -62,9 +66,11 @@ To setup authentication, follow the following steps on the "Authorization" tab a
 - Auth URL: "http://localhost:8888/realms/thingy-orange/protocol/openid-connect/auth"
 - Access Token URL: "http://localhost:8888/realms/thingy-orange/protocol/openid-connect/token"
 - Client ID: "backend"
-- Client Secret: YourSecretHere
+- Client Secret: "YourSecretHere"
 - Client Authentication: "Send as Basic Auth header"
 Once configured, click on "Get New Access Token". A login prompt will appear. Enter your test user credentials (keycloak admin won't work). If redirected successfully, the token should be available. Click "Use Token" to automatically add it to each request.
+
+
 
 ## Production Setup
 This section briefly describes steps to host the application on a production server. This guide is an example and should be adapted. Some seconary steps are only mentionned and the organization is responsible for it's setup.

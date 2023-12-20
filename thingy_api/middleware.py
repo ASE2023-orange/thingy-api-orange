@@ -42,13 +42,10 @@ async def keycloak_middleware(request: web.Request, handler):
     
     except keycloak.exceptions.KeycloakGetError as e:
         # Handle token validation errors
-        print(e)
         logging.error(e)
         return web.Response(text="Access forbidden: Token validation failed", status=403)
     
     except Exception as e:
         # Handle other exceptions
-        # print("middleware error")
-        # print(e.with_traceback())
         logging.error(e)
         return web.Response(text="Internal server error", status=500)

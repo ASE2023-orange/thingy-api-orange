@@ -53,7 +53,7 @@ def get_all_plants():
             return dict_data
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when retrieving plants."}
         
 
@@ -89,7 +89,7 @@ def get_plant(plant_id):
             return result
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when retrieving plant."}
 
 
@@ -133,7 +133,7 @@ def create_plant(values):
             return get_plant(values['id'])
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when inserting a new plant."}
         
 
@@ -174,7 +174,7 @@ def update_plant(plant_id, values):
             return get_plant(plant_id)
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when updating a plant."}
 
 
@@ -200,7 +200,7 @@ def delete_plant(plant_id):
             return get_all_plants()
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when deleting a plant."}
 
 

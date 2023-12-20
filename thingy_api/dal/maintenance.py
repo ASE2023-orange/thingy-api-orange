@@ -41,7 +41,7 @@ def get_maintenance_status(thingy_id):
                 return {"message": "Plant not found."}
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when retrieving plant maintenance status."}  
         
 
@@ -74,7 +74,7 @@ def reset_maintenance_status():
             return 
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when resetting maintenance_status field for all plants."}
         
 
@@ -107,7 +107,7 @@ def set_maintenance_end(thingy_id):
             return 
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when setting maintenance_status stop"}
         
 def set_maintenance_start(thingy_id):
@@ -139,7 +139,7 @@ def set_maintenance_start(thingy_id):
             return 
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when setting maintenance_status stop"}
 
 def get_maintenance_history(thingy_id):
@@ -172,7 +172,7 @@ def get_maintenance_history(thingy_id):
             return result
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when retrieving maintenance history ."}
         
 
@@ -214,7 +214,7 @@ def get_all_maintenance_thingies():
             return result
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when retrieving thingy_ids."}
 
 def add_new_thingy_id(thingy_id):
@@ -242,6 +242,6 @@ def add_new_thingy_id(thingy_id):
             return
         except Exception as e:
             conn.rollback()
-            print(f"Error: {e}")
+            logging.error(f"Error: {e}")
             return {"message": "error when inserting a new thingy id."}
         

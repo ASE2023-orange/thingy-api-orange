@@ -33,12 +33,10 @@ async def refresh_weather_info():
                         weather_data = await response.json()
                         current_weather[plant['id']] = weather_data # type: ignore
                     else:
-                        print(f"Error fetching weather data for plant {plant['id']}. Status code: {response.status}") # type: ignore
+                        logging.error(f"Error fetching weather data for plant {plant['id']}. Status code: {response.status}") # type: ignore
         except Exception as e:
-            print("Error when fetching weather data.")
+            logging.error("Error when fetching weather data.")
     
-    # print("Done fetching weather data")
-
     set_light_quality()
 
 
@@ -84,7 +82,6 @@ def set_light_quality():
             thingy_id = get_plant(plant_id)['thingy_id']
             # Publish mqtt to change color of current thingy
             logging.info(f"Changing light quality status color for {thingy_id}, plant {plant_id}")
-            print(f"Changing light quality status color for {thingy_id}, plant {plant_id}")
             publish_led_color(thingy_id, color)
 
 
