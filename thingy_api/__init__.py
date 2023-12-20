@@ -1,7 +1,7 @@
 """
 Main file to start mqtt and api servers.
 Created by: Jean-Marie Alder on 9 november 2023
-Updated by: LK on 19 dec 2023
+Updated by: LK on 20 dec 2023
 """
 
 import asyncio
@@ -18,6 +18,7 @@ from thingy_api.middleware import keycloak_middleware
 import thingy_api.dal.plant as plant_dal
 import thingy_api.dal.user as user_dal
 import thingy_api.dal.thingy_id as thingy_id_dal
+import thingy_api.dal.maintenance as maintenance_dal
 from thingy_api.thingy_mqtt import start_mqtt
 from thingy_api.thingy_mqtt import get_thingy_data
 from thingy_api.thingy_mqtt import start_mqtt, get_thingy_data, get_thingy_id_data
@@ -50,7 +51,7 @@ async def main():
     # Start the MQTT client
     start_mqtt()
     # Reset maintenance status
-    plant_dal.reset_maintenance()
+    maintenance_dal.reset_maintenance_status()
 
     # Get initial light quality 
     await refresh_weather_info()
@@ -69,7 +70,6 @@ async def schedule_task(task_function, interval_seconds):
 
 
 def init_app():
-
     # Create app, also including credential checker middleware
     app = web.Application(middlewares=[keycloak_middleware])
 
@@ -107,6 +107,10 @@ def init_app():
     cors.add(app.router.add_delete('/api/plants/{id}', delete_plant, name='delete_plant'))
     cors.add(app.router.add_patch('/api/plants/{id}', update_plant, name='update_plant'))
     cors.add(app.router.add_get('/api/map/plants', get_all_plants_map, name='get_all_plants_map'))
+
+    # maintenance actions
+    cors.add(app.router.add_get('/api/maintenance/status/{id}', get_plant_maintenance, name='get_plant_maintenance'))
+    cors.add(app.router.add_get('/api/maintenance/history/{id}', get_maintenance_history, name='get_maintenance_history'))
 
     cors.add(app.router.add_get('/api/plants/light/{id}', get_plant_light_quality, name='get_plant_light_quality'))
 
@@ -245,6 +249,19 @@ async def get_plant_light_quality(request):
     result = get_current_light_quality(id)
     return web.json_response({"light_quality": result})
 
+###########################################
+# MAINTENANCE ROUTES
+
+async def get_plant_maintenance(request):
+    id = str(request.match_info['id'])
+    result = maintenance_dal.get_maintenance_status(id)
+    return web.json_response(result)
+
+async def get_maintenance_history(request):
+    id = str(request.match_info['id'])
+    result = maintenance_dal.get_maintenance_history(id)
+    print(result)
+    return web.json_response(result)
 
 ###########################################
 # USERS ROUTES

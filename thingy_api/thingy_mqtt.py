@@ -1,7 +1,7 @@
 """
 MQTT utils file.
 Created by: Leyla Kandé on 9 november 2023
-Updated by: JMA on 8 dec 2023
+Updated by: LK on 20 dec 2023
 """
 
 import json
@@ -14,8 +14,7 @@ from os import getenv
 import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 from dotenv import load_dotenv
-from thingy_api.dal.plant import toggle_maintenance
-
+import thingy_api.dal.maintenance as maintenance_dal
 from thingy_api.dal.thingy_id import add_new_id, get_all_thingy_ids, update_id
 from thingy_api.influx import write_point
 
@@ -54,11 +53,11 @@ def on_message(client, userdata, msg):
     thingy_id = msg.topic.split('/')[1] # Works only if id is in between first and second slash
     message = json.loads(data)
 
+    update_thingy_id_list(thingy_id)
+
     if "appId" in message and message["appId"] == "BUTTON" and message["data"] == "1":
-        print("button click")
         update_maintenance(thingy_id)
     else: 
-        update_thingy_id_list(thingy_id)
         #Update real-time on FE 
         add_to_latest(message, thingy_id)
         # Append the data to the file in a non-blocking way
@@ -161,10 +160,17 @@ def get_thingy_id_data(thingy_id):
 
 def update_thingy_id_list(thingy_id):
     existing = get_all_thingy_ids()
+    maintenance = maintenance_dal.get_all_maintenance_thingies()
     if thingy_id not in existing:
         add_new_id(thingy_id)
     else:
         update_id(thingy_id)
+    if thingy_id not in maintenance:
+        maintenance_dal.add_new_thingy_id(thingy_id)
 
 def update_maintenance(thingy_id):
-    toggle_maintenance(thingy_id)
+    status = maintenance_dal.get_maintenance_status(thingy_id)
+    if status['maintenance_status'] == True:
+        maintenance_dal.set_maintenance_end(thingy_id)
+    else:
+        maintenance_dal.set_maintenance_start(thingy_id)

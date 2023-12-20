@@ -1,7 +1,7 @@
 """
 Access layer function for plant objects
 Created by: Jean-Marie Alder on 9 november 2023
-Updated by: LK on 19.12.2023
+Updated by: LK on 20.12.2023
 """
 from datetime import datetime
 from decimal import Decimal
@@ -176,68 +176,6 @@ def update_plant(plant_id, values):
             conn.rollback()
             print(f"Error: {e}")
             return {"message": "error when updating a plant."}
-        
-def toggle_maintenance(thingy_id):
-    """Update the inMaintenance field for a plant by thingy_id."""
-
-     # Establish a connection to your PostgreSQL database
-    with psycopg2.connect(
-        dbname="thingy_db",
-        user=getenv('DB_USER'),
-        password=getenv('DB_PASSWORD'),
-        host=getenv('DB_URL'),
-        port=getenv('DB_PORT')
-    ) as conn:
-        cursor = conn.cursor()
-
-        query = f"""
-                UPDATE public."Plant"
-                SET
-                    in_maintenance = NOT in_maintenance,
-                    updated_at = NOW()
-                WHERE
-                    thingy_id = '{thingy_id}'
-            """
-        try:
-            # Execute the UPDATE query
-            cursor.execute(query)
-            conn.commit()
-            logging.info(f"in_maintenance field updated successfully for plants with thingy_id: {thingy_id}")
-            return get_all_plants
-        except Exception as e:
-            conn.rollback()
-            print(f"Error: {e}")
-            return {"message": "error when updating in_maintenance field for plants."}
-        
-def reset_maintenance():
-    """Update the inMaintenance field for a plant by thingy_id."""
-
-     # Establish a connection to your PostgreSQL database
-    with psycopg2.connect(
-        dbname="thingy_db",
-        user=getenv('DB_USER'),
-        password=getenv('DB_PASSWORD'),
-        host=getenv('DB_URL'),
-        port=getenv('DB_PORT')
-    ) as conn:
-        cursor = conn.cursor()
-
-        query = f"""
-                UPDATE public."Plant"
-                SET
-                    in_maintenance = False,
-                    updated_at = NOW()
-            """
-        try:
-            # Execute the UPDATE query
-            cursor.execute(query)
-            conn.commit()
-            logging.info(f"in_maintenance field reset successfully for all plants")
-            return get_all_plants
-        except Exception as e:
-            conn.rollback()
-            print(f"Error: {e}")
-            return {"message": "error when resetting in_maintenance field for all plants."}
 
 
 def delete_plant(plant_id):
