@@ -92,4 +92,8 @@ This section briefly describes steps to host the application on a production ser
 - Adapt docker-compose-prod file to match your needs.
 - Copy and paste the docker-compose-prod.yml file to the root folder of the entire project (here, "thingy_orange"). Rename it to "docker-compose.yml"
 - To start all services, run ```docker compose up -d --build --force-recreate```. Use this command everytime you need to update the platform.
+- **Important**: The "init_db.sql" script should be run manually on the postgres instance. Please use any way to connect and run the script "init_db.sql" inside the "thingy_db" database. This will require a restart of all docker containers (especially Keycloak). Use the same docker compose command as mentionned above.
 - For debugging, have a look at docker container logs and the api logs inside "thingy-api-orange/logs/api.log".
+
+To know more about how it works. Please have a look at the following files: "docker-compose-prod.yml", "Dockerfile", and also the Dockerfile from the frontend.
+

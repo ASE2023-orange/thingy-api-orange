@@ -28,6 +28,8 @@ keycloak_openid = keycloak.KeycloakOpenID(server_url=server_url,
 
 @web.middleware
 async def keycloak_middleware(request: web.Request, handler):
+    """Middleware for authentication. Required on all routes.
+       Checks user token with Keycloak server."""
     # Get the access token from the request headers
     access_token = request.headers.get('Authorization', '').replace('Bearer ', '')
     try:

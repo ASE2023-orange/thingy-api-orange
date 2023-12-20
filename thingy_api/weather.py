@@ -16,11 +16,12 @@ load_dotenv(dotenv_path='environments/api.env')
 api_key = os.getenv('WEATHER_API_KEY', "default")
 api_url = "https://api.openweathermap.org/data/2.5/"
 
-current_weather = {}
-current_light_quality = {}
+current_weather = {} # Stores api request. Key= plant_id, Obj= api response.
+current_light_quality = {} # Keeps track of the light quality category (0-4)
 
 
 async def refresh_weather_info():
+    """Sets weather info to current situation using api call."""
     global current_weather
     plants = get_all_plants()
     for plant in plants:
@@ -106,6 +107,8 @@ def get_current_station_weather(plant_id):
 
 
 def add_light_quality_to_plants(plants):
+    """Takes all plants and adds light quality from weather api to each of them.
+    :param: plants {}"""
     for plant in plants:
         plant["light_quality"] = current_light_quality[plant["id"]]
     return plants

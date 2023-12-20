@@ -13,7 +13,7 @@ import aiohttp_cors
 from aiohttp import web
 from dotenv import load_dotenv
 
-from thingy_api.influx import get_plant_simple_history, write_test_point
+from thingy_api.influx import get_plant_simple_history
 from thingy_api.middleware import keycloak_middleware
 import thingy_api.dal.plant as plant_dal
 import thingy_api.dal.user as user_dal
@@ -88,8 +88,6 @@ def init_app():
     cors.add(app.router.add_get('/api/test', test_route, name='test'))
 
     # Historical data actions
-    cors.add(app.router.add_get('/api/test/influx', test_influx_write, name='test_influx_write'))
-    cors.add(app.router.add_get('/api/test/influx/get', test_influx_get, name='test_influx_get'))
     cors.add(app.router.add_get('/api/influx/{id}/{range}', influx_get_for, name='influx_get_for'))
 
     # currrent data actions
@@ -128,16 +126,6 @@ async def test_route(request):
 ########################################
 # INFLUX ROUTES
 
-async def test_influx_write(request):
-    """Route to test influx db"""
-    value = write_test_point()
-    return web.json_response({'value': value})
-
-async def test_influx_get(request):
-    """Route to test influx db, get test points"""
-    result = get_plant_simple_history("orange-1", "1d")
-    return web.json_response(result)
-
 async def influx_get_for(request):
     """Route to get influx data for thingy ID"""
     thingy_id = request.match_info.get('id')
@@ -174,6 +162,7 @@ async def thingy_data_by_id_get(request):
 
 
 async def get_all_thingy_ids(request):
+    """Route to get thingy Ids only"""
     result = thingy_id_dal.get_all_thingy_ids()
     return web.json_response(result)
 
@@ -182,13 +171,15 @@ async def get_all_thingy_ids(request):
 
 
 async def create_plant(request):
+    """Route to create a new plant. Takes a json object as request 
+       with all plant details."""
     data = await request.json()
     result = plant_dal.create_plant(data)
     return web.json_response(result)
 
 
 async def create_plant_dev(request):
-    """Create a new plant in the database"""
+    """DEV function: Creates two placeholder plants for tests."""
     plant_data_1 = {
         'friendly_name': 'Bundeshaus Energie',
         'thingy_id': 'orange-1',
@@ -217,16 +208,19 @@ async def create_plant_dev(request):
 
 
 async def get_all_plants(request):
+    """Route to get all plants."""
     return web.json_response(plant_dal.get_all_plants())
 
 
 async def get_plant(request):
+    """Route to get one plant by id."""
     id = str(request.match_info['id'])
     result = plant_dal.get_plant(id)
     return web.json_response(result)
 
 
 async def update_plant(request):
+    """Route to update a plant by id"""
     id = str(request.match_info['id'])
     data = await request.json()
     result = plant_dal.update_plant(id, data)
@@ -234,24 +228,29 @@ async def update_plant(request):
 
 
 async def delete_plant(request):
+    """Route to delete a plant by id"""
     id = str(request.match_info['id'])
     result = plant_dal.delete_plant(id)
     return web.json_response(result)
 
 
 async def get_all_plants_map(request):
+    """Route to get information to print on a map. 
+    It adds cloud cover information to show on plant popups."""
     plants = plant_dal.get_all_plants()
     plants_final = add_light_quality_to_plants(plants)
     return web.json_response(plants_final)
 
 
 async def get_plant_light_quality(request):
+    """Route to get light quality category (not % cloud cover) of a plant by id."""
     id = str(request.match_info['id'])
     result = get_current_light_quality(id)
     return web.json_response({"light_quality": result})
 
 
 async def get_weather_plant(request):
+    """Route to get weather information of a plant by id."""
     id = str(request.match_info['id'])
     result = get_current_station_weather(id)
     return web.json_response(result)
@@ -260,11 +259,13 @@ async def get_weather_plant(request):
 # MAINTENANCE ROUTES
 
 async def get_plant_maintenance(request):
+    """Route to get the status of a plant maintenance by id."""
     id = str(request.match_info['id'])
     result = maintenance_dal.get_maintenance_status(id)
     return web.json_response(result)
 
 async def get_maintenance_history(request):
+    """Route to get history of plant maintenances by plant id."""
     id = str(request.match_info['id'])
     result = maintenance_dal.get_maintenance_history(id)
     return web.json_response(result)
@@ -273,5 +274,6 @@ async def get_maintenance_history(request):
 # USERS ROUTES
 
 async def get_all_users(request):
+    """Route to get all users from Keycloak database table."""
     result = user_dal.get_all_users()
     return web.json_response(result)

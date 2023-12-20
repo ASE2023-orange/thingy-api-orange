@@ -158,6 +158,8 @@ def get_thingy_id_data(thingy_id):
     return id_data
 
 def update_thingy_id_list(thingy_id):
+    """Keeps track of connected thingy ids. Mainly, updates timestamp of last time
+       thingy sent data, as well as adding new thingy ids from the mqtt broker."""
     existing = get_all_thingy_ids()
     maintenance = maintenance_dal.get_all_maintenance_thingies()
     if thingy_id not in existing:
@@ -168,6 +170,7 @@ def update_thingy_id_list(thingy_id):
         maintenance_dal.add_new_thingy_id(thingy_id)
 
 def update_maintenance(thingy_id):
+    """Updates maintenance status and timestamps."""
     status = maintenance_dal.get_maintenance_status(thingy_id)
     if status['maintenance_status'] == True:
         maintenance_dal.set_maintenance_end(thingy_id)

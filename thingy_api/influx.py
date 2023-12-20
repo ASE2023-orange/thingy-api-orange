@@ -7,12 +7,11 @@ Updated by: Jean-Marie Alder on 6 dec 2023
 from datetime import datetime
 import logging
 import random
-import time
 from os import getenv
 
 import influxdb_client
 from dotenv import load_dotenv
-from influxdb_client import InfluxDBClient, Point, WritePrecision
+from influxdb_client import Point
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 # take environment variables from api.env
@@ -23,6 +22,7 @@ org = getenv("INFLUXDB_ORG", "default")
 url = getenv("INFLUXDB_URL", "localhost")
 bucket = getenv("INFLUXDB_BUCKET", "default")
 
+# CONSTANTS
 RANGE_MAP = {
     "30d": "2h",
     "15d": "1h",
@@ -52,6 +52,7 @@ COLOR_MAP = {
     "RED": "rgba(255, 0, 255, 1)",        # Magenta
     "RSRP": "rgba(128, 128, 128, 1)"      # Gray
 }
+
 
 def write_point(value, measurement, thingy_id):
     """Writes a point with specific label, thingy id and value.
@@ -100,22 +101,6 @@ def write_light_points(value, thingy_id):
     except Exception as e:
         logging.error(e)
         return value
-
-
-def write_test_point():
-    """Adds a random point to the test measurement in influxdb.
-    Value is between 0 and 10."""
-    value = int(random.random() * 10)
-    write_client = influxdb_client.InfluxDBClient(url=url, token=token, org=org)
-
-    write_api = write_client.write_api(write_options=SYNCHRONOUS)
-    point = (
-        Point("test")
-        .tag("environment", "development")
-        .field("field1", value)
-    )
-    write_api.write(bucket=bucket, org="thingy-orange", record=point)
-    return value
 
 
 def get_plant_simple_history(thingy_id, range):
